@@ -44,8 +44,27 @@ public class ManagePatientRecords implements ActionListener {
     private JButton searchButton;
     private JButton returnButton;
 
-    long x;
-    int searched = 0;
+    private int scan = 0;
+    private int line = -1;
+    private int searched = 0;
+    private int methodType = -1;
+    private int[] lines = new int[256];
+    private int noRecordFound = 0;
+    private String successDialogue;
+
+    private String patientUID;
+    private String nationalIDNo;
+    private String lastName;
+    private String firstName;
+    private String birthday;
+    private String finalUID;
+    private String deleteReason;
+    private String editUpdate;
+
+    private int countServices;
+    private int countPatients;
+    private String[][] services;
+    private String[][] patientRecords;
 
     public void managePatientRecords() {
         mm = new MainMenu();
@@ -72,7 +91,7 @@ public class ManagePatientRecords implements ActionListener {
         editButton = new JButton("Edit Patient Record");
         editButton.addActionListener(this);
         addButton.setBounds(10, 30, 500, 25);
-        panel.add(addButton);
+        panel.add(editButton);
 
         deleteButton = new JButton("Delete Patient Record");
         deleteButton.addActionListener(this);
@@ -280,7 +299,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void keyReleased(KeyEvent e) {
                 try {
-                    x = Long.parseLong(phoneNoText.getText());
+                    long x = Long.parseLong(phoneNoText.getText());
                 } catch (NumberFormatException nfe) {
                     String temp = phoneNoText.getText();
                     temp = temp.substring(0, temp.length()-1);
@@ -300,7 +319,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void keyReleased(KeyEvent e) {
                 try {
-                    x = Long.parseLong(nationalIdText.getText());
+                    long x = Long.parseLong(nationalIdText.getText());
                 } catch (NumberFormatException nfe) {
                     String temp = nationalIdText.getText();
                     temp = temp.substring(0, temp.length()-1);
@@ -316,9 +335,6 @@ public class ManagePatientRecords implements ActionListener {
 
         JButton yesButton = new JButton("YES");
         yesButton.setBounds(10, 300, 80, 25);
-//        if (firstNameText.getText().isEmpty() || lastNameText.getText().isEmpty() || middleNameText.getText().isEmpty() || birthdayText.getText().isEmpty() || (femaleButton.isSelected() || maleButton.isSelected()) || addressText.getText().isEmpty() || phoneNoText.getText().isEmpty() || nationalIdText.getText().isEmpty()) {
-//
-//        }
         yesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -478,678 +494,481 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    searches for a patient record
+//    searches for a patient record - methodType 0
     public void searchPatientRecord() {
-        mlr = new ManageLaboratoryRequest();
         rf = new ReadFile();
-        mm = new MainMenu();
 
-        int line=searchRecord();
-        String input;
+        methodType = 0;
 
-        // get all files in Patients.txt and save to String[][] patients
+        // get all lines in Patients.txt and save to String[][] patients
         String fileName = "Patients.txt";
         int error = rf.readPatients(fileName);
-        if(error==1) {
-            frame.dispose();
+        if (error==1)
+            error();
+        patientRecords = rf.getTempSearch();
 
-            frame = new JFrame();
-            panel = new JPanel();
+        // count total non-null entries in String[][] patients
+        for (String[] patient : patientRecords)
+            if (patient[0] != null)
+                countPatients++;
 
-            frame.setSize(960, 540);
-            frame.setTitle("Search Patient Records");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // get all lines in services.txt and save to String[][] patients
+        fileName = "services.txt";
+        error = rf.readServices(fileName);
+        if (error==1)
+            error();
+        services = rf.getTempServ();
+        services = sortArray(services);
 
-            panel.setLayout(new BorderLayout());
-
-            JLabel errorLabel = new JLabel("Patients.txt file not found. Please try again.");
-            errorLabel.setBounds(10, 10, 250, 25);
-            errorLabel.setForeground(Color.RED);
-            panel.add(errorLabel);
-
-            Timer timer = new Timer(5000, null);
-            timer.setRepeats(false);
-            timer.start();
-
-            frame.dispose();
-            searchPatientRecord();
-        }
-        String[][] patients = rf.getTempSearch();
-
-        if(line==-1)
-            searchPatientRecord();
-        else if(line==-2) {
-            frame.dispose();
-
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Search Patient Records");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-            JLabel dialogueMessage = new JLabel("No record found.");
-            dialogueMessage.setBounds(10, 10, 100, 20);
-            dialogueMessage.setForeground(Color.RED);
-            panel.add(dialogueMessage);
-
-            JLabel searchOrReturnLabel = new JLabel("Would you like to search for another patient record or return to the main menu?");
-            searchOrReturnLabel.setBounds(10, 10, 300, 25);
-            panel.add(searchOrReturnLabel);
-
-            JButton searchButton = new JButton("Search for another patient record");
-            searchButton.setBounds(10, 30, 80, 25);
-            searchButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    searchPatientRecord();
+        // count all services
+        for (String[] service : services)
+            for (int j = 0; j < services[0].length; j++)
+                if (service[0] != null && service[0].length() == 3) {
+                    countServices++;
+                    break;
                 }
-            });
-            panel.add(searchButton);
 
-            JButton returnButton = new JButton("Return to the Main Menu");
-            returnButton.setBounds(100, 30, 80, 25);
-            returnButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            panel.add(returnButton);
+        searchUID();
+    }
 
-            frame.add(panel);
-            frame.setVisible(true);
-        } else {
-            frame.dispose();
+//    searchPatientRecord()
+    public void displayPatient() {
+        mm = new MainMenu();
 
-            frame = new JFrame();
-            panel = new JPanel();
+        frame = new JFrame();
+        panel = new JPanel();
 
-            frame.setSize(960, 540);
-            frame.setTitle("Search Patient Records");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(960, 540);
+        frame.setTitle("Search Patient Records");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
 
-            panel.setLayout(new BorderLayout());
+        panel.setLayout(new BorderLayout());
 
-            String patientUID = patients[line][0];
+        String patientUID = patientRecords[line][0];
 
-            JLabel UIDLabel = new JLabel("Patient's UID: " + patients[line][0]);
-            UIDLabel.setBounds(10, 10, 80, 20);
-            panel.add(UIDLabel);
+        JLabel UIDLabel = new JLabel("Patient's UID: ");
+        UIDLabel.setBounds(10, 10, 95, 20);
+        panel.add(UIDLabel);
 
-            JLabel nameLabel = new JLabel("Name: " + patients[line][1] + ", " + patients[line][2] + " " + patients[line][3]);
-            nameLabel.setBounds(10, 40, 80, 20);
-            panel.add(nameLabel);
+        JLabel UIDInfo = new JLabel(patientRecords[line][0]);
+        UIDInfo.setBounds(105, 10, 250, 20);
+        panel.add(UIDInfo);
 
-            JLabel birthdayLabel = new JLabel("Birthday: " + patients[line][4]);
-            birthdayLabel.setBounds(10, 70, 80, 20);
-            panel.add(birthdayLabel);
+        JLabel nameLabel = new JLabel("Name: ");
+        nameLabel.setBounds(10, 30, 95, 20);
+        panel.add(nameLabel);
 
-            JLabel addressLabel = new JLabel("Address: " + patients[line][6]);
-            addressLabel.setBounds(10, 100, 80, 20);
-            panel.add(addressLabel);
+        JLabel nameInfo = new JLabel(patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3]);
+        nameInfo.setBounds(105, 30, 250, 20);
+        panel.add(nameInfo);
 
-            JLabel phoneNoLabel = new JLabel("Phone Number: " + patients[line][7]);
-            phoneNoLabel.setBounds(10, 130, 80, 20);
-            panel.add(phoneNoLabel);
+        JLabel birthdayLabel = new JLabel("Birthday: ");
+        birthdayLabel.setBounds(10, 50, 95, 20);
+        panel.add(birthdayLabel);
 
-            JLabel nationalIDNoLabel = new JLabel("National ID no.: " + patients[line][8]);
-            nationalIDNoLabel.setBounds(10, 160, 80, 20);
-            panel.add(nationalIDNoLabel);
+        JLabel birthdayInfo = new JLabel(patientRecords[line][4]);
+        birthdayInfo.setBounds(105, 50, 250, 20);
+        panel.add(birthdayInfo);
 
-            // get all lines in services.txt and save to String[][] services
-            fileName = "services.txt";
-            error = rf.readServices(fileName);
-            if(error==1) {
-                frame.dispose();
+        JLabel addressLabel = new JLabel("Address: ");
+        addressLabel.setBounds(10, 70, 95, 20);
+        panel.add(addressLabel);
 
-                frame = new JFrame();
-                panel = new JPanel();
+        JLabel addressInfo = new JLabel(patientRecords[line][6]);
+        addressInfo.setBounds(105, 70, 250, 20);
+        panel.add(addressInfo);
 
-                frame.setSize(960, 540);
-                frame.setTitle("Search Patient Records");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel phoneNoLabel = new JLabel("Phone Number: ");
+        phoneNoLabel.setBounds(10, 90, 95, 20);
+        panel.add(phoneNoLabel);
 
-                panel.setLayout(new BorderLayout());
+        JLabel phoneNoInfo = new JLabel(patientRecords[line][7]);
+        phoneNoInfo.setBounds(105, 90, 250, 20);
+        panel.add(phoneNoInfo);
 
-                JLabel errorMessage = new JLabel("services.txt file not found. Please try again.");
-                errorMessage.setBounds(10, 10, 100, 20);
-                errorMessage.setForeground(Color.RED);
-                panel.add(errorMessage);
+        JLabel nationalIDNoLabel = new JLabel("National ID no.: ");
+        nationalIDNoLabel.setBounds(10, 110, 95, 20);
+        panel.add(nationalIDNoLabel);
 
-                frame.add(panel);
-                frame.setVisible(true);
+        JLabel nationalIDNoInfo = new JLabel(patientRecords[line][8]);
+        nationalIDNoInfo.setBounds(105, 110, 250, 20);
+        panel.add(nationalIDNoInfo);
 
-                searchPatientRecord();
-                frame.dispose();
-            }
-            String[][] services = rf.getTempServ();
-            services = sortArray(services);
-            // count all services
-            int count = 0;
-            for (String[] service : services)
+        String code;
+
+        JLabel requestUIDLabel = new JLabel("Request's UID");
+        requestUIDLabel.setBounds(10, 150, 100, 20);
+        panel.add(requestUIDLabel);
+
+        JLabel labTestTypeLabel = new JLabel("Lab Test Type");
+        labTestTypeLabel.setBounds(200, 150, 100, 20);
+        panel.add(labTestTypeLabel);
+
+        JLabel requestDateLabel = new JLabel("Request Date");
+        requestDateLabel.setBounds(390, 150, 100, 20);
+        panel.add(requestDateLabel);
+
+        JLabel requestLabel = new JLabel("Result");
+        requestLabel.setBounds(580, 150, 100, 20);
+        panel.add(requestLabel);
+
+        int y = 150;
+        for(int i=0; i<countServices; i++) {
+            code = services[i][0];
+            String description = services[i][1];
+
+            String fileName = code + "_Requests.txt";
+            int error = rf.readRequests(fileName);
+            if (error == 1)
+                error();
+            String[][] requests = rf.getTempReq();
+            requests = sortDate(requests);
+
+            int length = 0;
+            for (String[] request : requests)
                 for (int j = 0; j < services[0].length; j++)
-                    if (service[0] != null && service[0].length() == 3) {
-                        count++;
+                    if (request[0] != null && request[0].length() == 15) {
+                        length++;
                         break;
                     }
 
-            JLabel requestUIDLabel = new JLabel("Request's UID");
-            requestUIDLabel.setBounds(10, 250, 100, 20);
-            panel.add(requestUIDLabel);
+            File file = new File(fileName);
+            boolean exists = file.exists();
 
-            JLabel labTestTypeLabel = new JLabel("Lab Test Type");
-            labTestTypeLabel.setBounds(100, 250, 100, 20);
-            panel.add(labTestTypeLabel);
-
-            JLabel requestDateLabel = new JLabel("Request Date");
-            requestDateLabel.setBounds(190, 250, 100, 20);
-            panel.add(requestDateLabel);
-
-            JLabel requestLabel = new JLabel("Result");
-            requestLabel.setBounds(280, 250, 100, 20);
-            panel.add(requestLabel);
-
-            String code;
-            for(int i=0; i<count; i++) {
-                code = services[i][0];
-                fileName = code + "_Requests.txt";
-                error = rf.readRequests(fileName);
-                if (error == 1) {
-                    frame.dispose();
-
-                    frame = new JFrame();
-                    panel = new JPanel();
-
-                    frame.setSize(960, 540);
-                    frame.setTitle("Search Patient Records");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    panel.setLayout(new BorderLayout());
-
-                    JLabel errorMessage = new JLabel(code + "_Requests.txt file not found. Please try again.");
-                    errorMessage.setBounds(10, 10, 100, 20);
-                    errorMessage.setForeground(Color.RED);
-                    panel.add(errorMessage);
-
-                    frame.add(panel);
-                    frame.setVisible(true);
-
-                    frame.dispose();
-                    searchPatientRecord();
+            for (int j = length - 1; j >= 0; j--) {
+                int x = 10;
+                if (patientUID.equals(requests[j][1]) && exists) {
+                    y+=20;
+                    JLabel requestUID = new JLabel(requests[j][0]);
+                    requestUID.setBounds(x, y, 170, 20);
+                    panel.add(requestUID);
+                    x+=190;
+                    JLabel labTestType = new JLabel(description);
+                    labTestType.setBounds(x, y, 170, 20);
+                    panel.add(labTestType);
+                    x+=190;
+                    JLabel requestDate = new JLabel(requests[j][2]);
+                    requestDate.setBounds(x, y, 170, 20);
+                    panel.add(requestDate);
+                    x+=190;
+                    JLabel results = new JLabel(requests[j][4]);
+                    results.setBounds(x, y, 170, 20);
+                    panel.add(results);
                 }
-                String[][] requests = rf.getTempReq();
-                requests = sortDate(requests);
-                int length = 0;
-                for (String[] request : requests)
-                    for (int j = 0; j < services[0].length; j++)
-                        if (request[0] != null && request[0].length() == 15) {
-                            length++;
-                            break;
-                        }
-
-                File file = new File(fileName);
-                boolean exists = file.exists();
-
-                int y1 = 250;
-                for (int j = length - 1; j >= 0; j--) {
-                    int x1 = 10;
-                    y1+=30;
-                    if (patientUID.equals(requests[j][1]) && exists) {
-                        String tempRUID = requests[j][0];
-                        String tempLab = requests[j][0].substring(0, 3);
-                        String tempDate = requests[j][2];
-                        String tempResult = requests[j][4];
-
-                        JLabel requestUID = new JLabel(tempRUID);
-                        requestUID.setBounds(x1, y1, 100, 20);
-                        panel.add(requestUID);
-
-                        x1+=90;
-
-                        JLabel labTestType = new JLabel(tempLab);
-                        labTestType.setBounds(x1, y1, 100, 20);
-                        panel.add(labTestType);
-
-                        x1+=90;
-
-                        JLabel requestDate = new JLabel(tempDate);
-                        requestDate.setBounds(x1, y1, 100, 20);
-                        panel.add(requestDate);
-
-                        x1+=90;
-
-                        JLabel results = new JLabel(tempResult);
-                        results.setBounds(x1, y1, 100, 20);
-                        panel.add(results);
-                    }
-                }
-
-                Arrays.stream(requests).forEach(x -> Arrays.fill(x, null));
             }
-            frame.add(panel);
-            frame.setVisible(true);
+            Arrays.stream(requests).forEach(x -> Arrays.fill(x, null));
+        }
+        JLabel buffer = new JLabel("");
+        buffer.setBounds(10, y+30, 100, 20);
+        panel.add(buffer);
 
-            JFrame popUpFrame = new JFrame();
-            JPanel popUpPanel = new JPanel();
+        frame.setVisible(true);
 
-            popUpFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        printResultsDialogue();
+    }
 
-            popUpPanel.setLayout(new BorderLayout());
+//    searchPatientRecord()
+    public void printResultsDialogue() {
+        JFrame popUpFrame = new JFrame();
+        JPanel popUpPanel = new JPanel();
 
-            JLabel printDialogue = new JLabel("Do you want to print a laboratory test result");
-            printDialogue.setHorizontalAlignment(JLabel.CENTER);
-            printDialogue.setVerticalAlignment(JLabel.NORTH);
-            popUpPanel.add(printDialogue);
+        popUpFrame.setSize(960, 540);
+        popUpFrame.setTitle("Print Laboratory Request");
+        popUpFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        popUpFrame.setLocationRelativeTo(null);
 
-            JButton yesButton = new JButton("YES");
-            yesButton.setVerticalAlignment(JLabel.SOUTH);
-            yesButton.setHorizontalAlignment(JButton.EAST);
-            yesButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    popUpFrame.dispose();
+        BoxLayout boxLayout = new BoxLayout(popUpPanel, BoxLayout.Y_AXIS);
+        popUpPanel.setLayout(boxLayout);
+        popUpPanel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+        popUpFrame.add(popUpPanel);
 
-                    String[] ret = mlr.searchLaboratoryRequest(2);
-                    String fileName = "Patients.txt";
-                    rf.readPatients(fileName);
-                    String[][] patients = rf.getTempSearch();
+        JLabel printDialogue = new JLabel("Do you want to print a laboratory test result?");
+        printDialogue.setBounds(10, 10, 500, 20);
+        popUpPanel.add(printDialogue);
 
-                    String name = patients[line][1] + ", " + patients[line][2] + " " + patients[line][3];
-                    String sUID = ret[0];
-                    String pUID = patients[line][0];
-                    String birthday = patients[line][4];
-                    String gender = patients[line][5];
-                    String phoneNo = patients[line][7];
-                    String test = ret[3];
-                    String result = ret[2];
-                    String rDate = ret[1];
+        JButton yesButton = new JButton("YES");
+        yesButton.setBounds(10, 40, 80, 25);
+        yesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                popUpFrame.dispose();
+                printResults();
+            }
+        });
+        popUpPanel.add(yesButton);
 
-                    // calculating age
-                    int birthYear = Integer.parseInt(birthday.substring(0, 4));
-                    int birthMonth = Integer.parseInt(birthday.substring(4, 6));
-                    int birthDay = Integer.parseInt(birthday.substring(birthday.length()-2));
-                    LocalDate start = LocalDate.of(birthYear, birthMonth, birthDay); // use for age-calculation: LocalDate.now()
-                    LocalDate end = LocalDate.now(ZoneId.systemDefault());
-                    int age = (int) ChronoUnit.YEARS.between(start, end);
+        JButton noButton = new JButton("NO");
+        noButton.setBounds(110, 40, 80, 25);
+        noButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                popUpFrame.dispose();
+                mm.mainMenu();
+            }
+        });
+        popUpPanel.add(noButton);
 
-                    //print pdf
-                    String pdfName = patients[line][1] + "_" + sUID + "_" + rDate + ".pdf";
-                    try {
-                        PrintLabResults.printPdf(pdfName, name, sUID, pUID, rDate, birthday, gender, phoneNo, age, test, result);
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                }
-            });
-            popUpPanel.add(yesButton);
+        popUpFrame.pack();
+        popUpFrame.setVisible(true);
+    }
 
-            JButton noButton = new JButton("NO");
-            noButton.setVerticalAlignment(JLabel.SOUTH);
-            noButton.setHorizontalAlignment(JButton.WEST);
-            noButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    popUpFrame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            popUpPanel.add(noButton);
+//    searchPatientRecord()
+    public void printResults() {
+        mlr = new ManageLaboratoryRequest();
 
-            popUpFrame.add(panel);
-            popUpFrame.setVisible(true);
+        String[] ret = mlr.searchLaboratoryRequest(2);
+
+        String name = patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3];
+        String sUID = ret[0];
+        String pUID = patientRecords[line][0];
+        String birthday = patientRecords[line][4];
+        String gender = patientRecords[line][5];
+        String phoneNo = patientRecords[line][7];
+        String test = ret[3];
+        String result = ret[2];
+        String rDate = ret[1];
+
+        // calculating age
+        int birthYear = Integer.parseInt(birthday.substring(0, 4));
+        int birthMonth = Integer.parseInt(birthday.substring(4, 6));
+        int birthDay = Integer.parseInt(birthday.substring(birthday.length()-2));
+        LocalDate start = LocalDate.of(birthYear, birthMonth, birthDay); // use for age-calculation: LocalDate.now()
+        LocalDate end = LocalDate.now(ZoneId.systemDefault());
+        int age = (int) ChronoUnit.YEARS.between(start, end);
+
+        //print pdf
+        String pdfName = patientRecords[line][1] + "_" + sUID + "_" + rDate + ".pdf";
+        try {
+            PrintLabResults.printPdf(pdfName, name, sUID, pUID, rDate, birthday, gender, phoneNo, age, test, result);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
     }
 
-//    deletes a patient record
+//    deletes a patient record - methodType 1
     public void deletePatientRecord() {
         mm = new MainMenu();
+        rf = new ReadFile();
 
-        int line=searchRecord();
+        methodType = 1;
 
-        if(line==-1)
-            deletePatientRecord();
-        else if(line==-2) {
-            frame.dispose();
+        // get all lines in Patients.txt and save to String[][] patients
+        String fileName = "Patients.txt";
+        int error = rf.readPatients(fileName);
+        if (error==1)
+            error();
+        patientRecords = rf.getTempSearch();
 
-            frame = new JFrame();
-            panel = new JPanel();
+        // count total non-null entries in String[][] patients
+        for (String[] patient : patientRecords)
+            if (patient[0] != null)
+                countPatients++;
 
-            frame.setSize(960, 540);
-            frame.setTitle("Delete A Patient Record");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        searchUID();
+    }
 
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+//    deletePatientRecord
+    public void deleteInput() {
+        frame = new JFrame();
+        panel = new JPanel();
 
-            JLabel dialogueMessage = new JLabel("No record found.");
-            dialogueMessage.setBounds(10, 10, 100, 20);
-            dialogueMessage.setForeground(Color.RED);
-            panel.add(dialogueMessage);
+        frame.setSize(960, 540);
+        frame.setTitle("Delete A Patient Record");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
 
-            JLabel searchOrReturnLabel = new JLabel("Would you like to delete another patient record or return to the main menu?");
-            searchOrReturnLabel.setBounds(10, 10, 300, 25);
-            panel.add(searchOrReturnLabel);
+        panel.setLayout(null);
 
-            JButton searchButton = new JButton("Delete another patient record");
-            searchButton.setBounds(10, 30, 80, 25);
-            searchButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    deletePatientRecord();
-                }
-            });
-            panel.add(searchButton);
+        JLabel reasonLabel = new JLabel("Please state reason for deletion: ");
+        reasonLabel.setBounds(10, 10, 200, 20);
+        panel.add(reasonLabel);
 
-            JButton returnButton = new JButton("Return to the Main Menu");
-            returnButton.setBounds(100, 30, 80, 25);
-            returnButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            panel.add(returnButton);
+        JTextField reasonText = new JTextField();
+        reasonText.setBounds(210, 10, 250, 25);
+        panel.add(reasonText);
 
-            frame.add(panel);
-            frame.setVisible(true);
-        } else {
-            frame.dispose();
-
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Delete A Patient Record");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-            JLabel reasonLabel = new JLabel("Please state reason for deletion: ");
-            reasonLabel.setBounds(10, 10, 100, 20);
-            panel.add(reasonLabel);
-
-            final int[] success = {0};
-            final String[] UID = new String[1];
-            JTextField reasonText = new JTextField();
-            reasonText.setBounds(10, 120, 100, 25);
-            reasonText.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String reason = reasonText.getText();
-                    String D = "D;";
-                    String newLine = String.join("", D, reason);
-                    String fileName = "Patients.txt";
-                    try {
-                        File file = new File(fileName);
-                        Scanner scannerFile = new Scanner(file);
-
-                        String tempLine = Files.readAllLines(Paths.get(fileName)).get(line);
-                        StringBuilder buffer = new StringBuilder();
-                        while(scannerFile.hasNextLine()) {
-                            buffer.append(scannerFile.nextLine()).append(System.lineSeparator());
-                        }
-                        String fileContents = buffer.toString();
-                        scannerFile.close();
-
-                        String line1 = String.join("",tempLine,newLine,";");
-                        fileContents = fileContents.replaceAll(tempLine,line1);
-                        FileWriter fw = new FileWriter(fileName);
-                        fw.append(fileContents);
-                        fw.flush();
-
-                        String[] splitLine = tempLine.split(";");
-                        UID[0] = splitLine[0];
-
-                        success[0] = 1;
-                    } catch(IOException ioe) {
-                        success[0] = -1;
-                    }
-                }
-            });
-            panel.add(reasonText);
-
-            frame.add(panel);
-            frame.setVisible(true);
-
-            frame.dispose();
-
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Delete A Patient Record");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            BoxLayout newBoxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(newBoxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-            if (success[0] == 1) {
-                String dialogue = "Data of patient " + UID[0] + " has been deleted.";
-                JLabel successDialogue = new JLabel(dialogue);
-                successDialogue.setBounds(10, 10, 200, 20);
-                successDialogue.setForeground(Color.BLUE);
-                panel.add(successDialogue);
-            } else {
-                JLabel errorLabel = new JLabel("Error occurred. Please try again.");
-                errorLabel.setBounds(10, 10, 250, 25);
-                errorLabel.setForeground(Color.RED);
-                panel.add(errorLabel);
-
-                Timer timer = new Timer(5000, null);
-                timer.setRepeats(false);
-                timer.start();
-
+        JButton deleteButton = new JButton("DELETE");
+        deleteButton.setBounds(10, 40, 100, 25);
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteReason = reasonText.getText();
                 frame.dispose();
-                deletePatientRecord();
+                delete();
             }
-            JLabel deleteOrReturnLabel = new JLabel("Would you like to delete another patient record or return to the main menu?");
-            deleteOrReturnLabel.setBounds(10, 10, 250, 25);
-            panel.add(deleteOrReturnLabel);
+        });
+        panel.add(deleteButton);
 
-            JButton deleteButton = new JButton("Delete Patient Record");
-            deleteButton.setBounds(10, 30, 80, 25);
-            deleteButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    deletePatientRecord();
-                }
-            });
-            panel.add(deleteButton);
+        frame.setVisible(true);
+    }
 
-            JButton returnButton = new JButton("Return to the Main Menu");
-            returnButton.setBounds(100, 30, 80, 25);
-            returnButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            panel.add(returnButton);
+//    deletePatientRecord
+    public void delete() {
+        String D = "D;";
+        String newLine = String.join("", D, deleteReason);
+        String fileName = "Patients.txt";
 
-            frame.add(panel);
-            frame.setVisible(true);
+        try {
+            File file = new File(fileName);
+            Scanner scannerFile = new Scanner(file);
+
+            String tempLine = Files.readAllLines(Paths.get(fileName)).get(line);
+            StringBuilder buffer = new StringBuilder();
+            while(scannerFile.hasNextLine()) {
+                buffer.append(scannerFile.nextLine()).append(System.lineSeparator());
+            }
+            String fileContents = buffer.toString();
+            scannerFile.close();
+
+            String line1 = String.join("",tempLine,newLine,";");
+            fileContents = fileContents.replaceAll(tempLine,line1);
+            FileWriter fw = new FileWriter(fileName);
+            fw.append(fileContents);
+            fw.flush();
+
+            String[] splitLine = tempLine.split(";");
+            String UID = splitLine[0];
+
+            successDialogue = "Data of patient " + UID + " has been deleted.";
+            confirmation();
+        } catch(IOException e) {
+            error();
         }
     }
 
-//    edits a patients address or phone number
+//    edits a patients address or phone number - methodType 2
     public void editPatientRecord() {
         mm = new MainMenu();
-        Scanner scanner = new Scanner(System.in);
+        rf = new ReadFile();
 
-        int line=searchRecord();
-        String input;
-        final int[] update = {0};
-        final String[] newLine = {null};
+        methodType = 2;
 
-        if(line==-1)
-            editPatientRecord();
-        else if(line==-2) {
-            frame.dispose();
-
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Edit Patient Records");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            panel.setLayout(new BorderLayout());
-
-            JLabel errorLabel = new JLabel("No record found.");
-            errorLabel.setBounds(10, 10, 250, 25);
-            errorLabel.setForeground(Color.RED);
-            panel.add(errorLabel);
-
-            JLabel editOrReturnLabel = new JLabel("Would you like to edit another patient record or return to the main menu?");
-            editOrReturnLabel.setBounds(10, 50, 250, 25);
-            panel.add(editOrReturnLabel);
-
-            JButton editButton = new JButton("Edit a Patient Record");
-            editButton.setBounds(10, 80, 80, 25);
-            editButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    editPatientRecord();
-                }
-            });
-            panel.add(editButton);
-
-            JButton returnButton = new JButton("Return to the Main Menu");
-            returnButton.setBounds(100, 80, 80, 25);
-            returnButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            panel.add(returnButton);
-
-            frame.add(panel);
-            frame.setVisible(true);
-        } else {
-            frame.dispose();
-
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Edit Patient Record");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-            JLabel updateLabel = new JLabel("Would you like to update the patient's Address or Phone Number?");
-            updateLabel.setBounds(10, 10, 500, 20);
-            panel.add(updateLabel);
-
-            JButton addressButton = new JButton("Address");
-            addressButton.setBounds(10,40, 100, 25);
-            addressButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-
-                    frame = new JFrame();
-                    panel = new JPanel();
-
-                    frame.setSize(960, 540);
-                    frame.setTitle("Edit Patient Record");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                    panel.setLayout(boxLayout);
-                    panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                    JLabel newAddressLabel = new JLabel("Enter the patient's new Address: ");
-                    newAddressLabel.setBounds(10, 10, 100, 20);
-                    panel.add(newAddressLabel);
-
-                    JTextField newAddress = new JTextField();
-                    newAddress.setBounds(110, 10, 100, 25);
-                    panel.add(newAddress);
-
-                    JButton updateButton = new JButton("UPDATE");
-                    updateButton.setBounds(10, 40, 80, 25);
-                    updateButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            newLine[0] = newAddress.getText();
-                            update[0] = 1;
-                        }
-                    });
-                    panel.add(updateButton);
-
-                    frame.add(panel);
-                    frame.setVisible(true);
-                }
-            });
-            panel.add(addressButton);
-
-            JButton phoneNoButton = new JButton("Phone Number");
-            phoneNoButton.setBounds(110, 40, 100, 25);
-            phoneNoButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-
-                    frame = new JFrame();
-                    panel = new JPanel();
-
-                    frame.setSize(960, 540);
-                    frame.setTitle("Edit Patient Record");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                    panel.setLayout(boxLayout);
-                    panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                    JLabel newPhoneNoLabel = new JLabel("Enter the patient's new Phone Number: ");
-                    newPhoneNoLabel.setBounds(10, 10, 100, 20);
-                    panel.add(newPhoneNoLabel);
-
-                    JTextField newPhoneNo = new JTextField();
-                    newPhoneNo.setBounds(110, 10, 100, 25);
-                    panel.add(newPhoneNo);
-
-                    JButton updateButton = new JButton("UPDATE");
-                    updateButton.setBounds(10, 40, 80, 25);
-                    updateButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            newLine[0] = newPhoneNo.getText();
-                        }
-                    });
-                    panel.add(updateButton);
-                }
-            });
-            panel.add(phoneNoButton);
-
-            frame.add(panel);
-            frame.setVisible(true);
-        }
-
-        int success;
-        String UID = null;
+        // get all lines in Patients.txt and save to String[][] patients
         String fileName = "Patients.txt";
+        int error = rf.readPatients(fileName);
+        if (error==1)
+            error();
+        patientRecords = rf.getTempSearch();
+
+        // count total non-null entries in String[][] patients
+        for (String[] patient : patientRecords)
+            if (patient[0] != null)
+                countPatients++;
+
+        searchUID();
+    }
+
+//    editPatientRecord()
+    public void editOption() {
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Edit Patient Record");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(boxLayout);
+        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+
+        JLabel updateLabel = new JLabel("Would you like to update the patient's Address or Phone Number?");
+        updateLabel.setBounds(10, 10, 500, 20);
+        panel.add(updateLabel);
+
+        JButton addressButton = new JButton("Update Address");
+        addressButton.setBounds(10, 10, 100, 25);
+        addressButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scan = 1;
+                frame.dispose();
+                editInput();
+            }
+        });
+        panel.add(addressButton);
+
+        JButton phoneNoButton = new JButton("Update Phone Number");
+        phoneNoButton.setBounds(10, 10, 100, 25);
+        phoneNoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scan = 2;
+                frame.dispose();
+                editInput();
+            }
+        });
+        panel.add(phoneNoButton);
+
+        frame.setVisible(true);
+    }
+
+//    editPatientRecord()
+    public void editInput() {
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Edit Patient Record");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        switch (scan) {
+            case 1 -> {
+                JLabel newAddressLabel = new JLabel("Enter the patient's new Address: ");
+                newAddressLabel.setBounds(10, 10, 200, 20);
+                panel.add(newAddressLabel);
+
+                JTextField newAddress = new JTextField();
+                newAddress.setBounds(210, 10, 250, 25);
+                panel.add(newAddress);
+
+                JButton updateButton = new JButton("UPDATE");
+                updateButton.setBounds(10, 40, 80, 25);
+                updateButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        editUpdate = newAddress.getText();
+                        frame.dispose();
+                        edit();
+                    }
+                });
+                panel.add(updateButton);
+            }
+            case 2 -> {
+                JLabel newPhoneNoLabel = new JLabel("Enter the patient's new Phone number: ");
+                newPhoneNoLabel.setBounds(10, 10, 230, 20);
+                panel.add(newPhoneNoLabel);
+
+                JTextField newPhoneNo = new JTextField();
+                newPhoneNo.setBounds(240, 10, 250, 25);
+                panel.add(newPhoneNo);
+
+                JButton updateButton = new JButton("UPDATE");
+                updateButton.setBounds(10, 40, 120, 20);
+                updateButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        editUpdate = newPhoneNo.getText();
+                        frame.dispose();
+                        edit();
+                    }
+                });
+                panel.add(updateButton);
+            }
+        }
+        frame.setVisible(true);
+    }
+
+//    editPatientRecord()
+    public void edit() {
+        String fileName = "Patients.txt";
+
         try {
             File file = new File(fileName);
             Scanner scannerFile = new Scanner(file);
@@ -1163,10 +982,10 @@ public class ManagePatientRecords implements ActionListener {
             scannerFile.close();
 
             String[] splitLine = tempLine.split(";");
-            if (update[0] == 1)
-                splitLine[6] = newLine[0];
-            else
-                splitLine[7] = newLine[0];
+            if (scan == 1)
+                splitLine[6] = editUpdate;
+            else if (scan == 2)
+                splitLine[7] = editUpdate;
 
             String line1 = String.join(";", splitLine);
             line1 = String.join("", line1, ";");
@@ -1176,131 +995,24 @@ public class ManagePatientRecords implements ActionListener {
             fw.append(fileContents);
             fw.flush();
 
-            UID = splitLine[0];
-            success = 1;
+            String UID = splitLine[0];
+            successDialogue = "The Address/Phone Number of patient " + UID + " has been updated.";
+            confirmation();
         } catch (IOException e) {
-            success = 0;
-            System.out.println("Error occurred. Please try again.\n");
-            editPatientRecord();
+            error();
         }
-
-        frame.dispose();
-
-        frame = new JFrame();
-        panel = new JPanel();
-
-        frame.setSize(960, 540);
-        frame.setTitle("Edit Patient Records");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-        panel.setLayout(boxLayout);
-        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-        if (success == 1) {
-            String dialogue = "The Address/Phone Number of patient " + UID + " has been updated.";
-            JLabel messageDialogue = new JLabel(dialogue);
-            messageDialogue.setBounds(10, 10, 250, 25);
-            messageDialogue.setForeground(Color.BLUE);
-            panel.add(messageDialogue);
-        } else {
-            JLabel messageDialogue = new JLabel("Error occurred. Please try again.");
-            messageDialogue.setBounds(10, 10, 250, 25);
-            messageDialogue.setForeground(Color.RED);
-            panel.add(messageDialogue);
-        }
-
-        JLabel addOrReturnLabel = new JLabel("Would you like to edit another patient record or return to the main menu?");
-        addOrReturnLabel.setBounds(10, 50, 250, 25);
-        panel.add(addOrReturnLabel);
-
-        JButton editPatientRecordButton = new JButton("Edit Patient Record");
-        editPatientRecordButton.setBounds(10, 80, 80, 25);
-        editPatientRecordButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                editPatientRecord();
-            }
-        });
-        panel.add(editPatientRecordButton);
-
-        JButton returnButton = new JButton("Return to the Main Menu");
-        returnButton.setBounds(100, 80, 80, 25);
-        returnButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                mm.mainMenu();
-            }
-        });
-        panel.add(returnButton);
-
-        frame.add(panel);
-        frame.setVisible(true);
     }
 
-/*
-* searches Patients.txt for methods:
-*   searchPatientRecord(), deletePatientRecord(), and editPatientRecord()
-* returns the line number needed
-* */
-    public int searchRecord() {
-        rf = new ReadFile();
-
-        // get all lines in Patients.txt and save to String[][] patients
-        String fileName = "Patients.txt";
-        int error = rf.readPatients(fileName);
-        if(error==1) {
-            frame = new JFrame();
-            panel = new JPanel();
-
-            frame.setSize(960, 540);
-            frame.setTitle("Searching Records");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            panel.setLayout(new BorderLayout());
-
-            JLabel errorMessage = new JLabel("Patients.txt file not found. Please try again.");
-            errorMessage.setBounds(10, 10, 100, 20);
-            errorMessage.setForeground(Color.RED);
-            panel.add(errorMessage);
-
-            Timer timer = new Timer(5000, null);
-            timer.setRepeats(false);
-            timer.start();
-
-            frame.add(panel);
-            frame.setVisible(true);
-
-            frame.dispose();
-            return -1;
-        }
-        String[][] patients = rf.getTempSearch();
-
-        // count total non-null entries in String[][] patients
-        int count = 0;
-        for (String[] patient : patients)
-            if (patient[0] != null)
-                count++;
-        int finalCount = count;
-
-        int line;
-        int[] lines = new int[256];
-
+    public void searchUID() {
         frame = new JFrame();
         panel = new JPanel();
 
         frame.setSize(960, 540);
-        frame.setTitle("Searching Records");
+        frame.setTitle("Searching Patient Records...");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         frame.add(panel);
-        frame.setVisible(true);
 
-        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-        panel.setLayout(boxLayout);
-        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+        panel.setLayout(null);
 
         JLabel patientUIDLabel = new JLabel("Do you know the patient's UID?");
         patientUIDLabel.setBounds(10, 10, 500, 20);
@@ -1312,52 +1024,11 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-
-                frame = new JFrame();
-                panel = new JPanel();
-
-                frame.setSize(960, 540);
-                frame.setTitle("Searching Records");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                panel.setLayout(boxLayout);
-                panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                JLabel patientUIDLabel = new JLabel("Enter patient's UID:");
-                patientUIDLabel.setBounds(10, 10, 80, 20);
-                panel.add(patientUIDLabel);
-
-                JTextField patientUIDText = new JTextField();
-                patientUIDText.setBounds(200, 10, 250, 25);
-                panel.add(patientUIDText);
-
-                JButton searchButton = new JButton("SEARCH");
-                searchButton.setBounds(10, 40, 250, 25);
-                searchButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String searchUID = patientUIDText.getText();
-
-                        for (int i = 0; i < finalCount; i++)
-                            if(Objects.equals(patients[i][0], searchUID) && !Objects.equals(patients[i][9], "D")) {
-                                searched = 1;
-                                lines[0] = i;
-                                break;
-                            } else
-                                lines[0] = -2;
-                    }
-                });
-                panel.add(searchButton);
-
-                frame.add(panel);
-                frame.setVisible(true);
+                scan = 1;
+                searchInput();
             }
         });
         panel.add(yesUIDButton);
-
-        frame.add(panel);
-        frame.setVisible(true);
 
         JButton noUIDButton = new JButton("NO");
         noUIDButton.setBounds(100, 40, 80, 25);
@@ -1365,250 +1036,447 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-
-                frame = new JFrame();
-                panel = new JPanel();
-
-                frame.setSize(960, 540);
-                frame.setTitle("Searching Records");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                panel.setLayout(boxLayout);
-                panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                JLabel nationalIDLabel = new JLabel("Do you know the patient's National ID no.?");
-                nationalIDLabel.setBounds(10, 10, 500, 20);
-                panel.add(nationalIDLabel);
-
-                JButton yesIDButton = new JButton("YES");
-                yesIDButton.setBounds(10, 40, 80, 25);
-                yesIDButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        frame.dispose();
-
-                        frame = new JFrame();
-                        panel = new JPanel();
-
-                        frame.setSize(960, 540);
-                        frame.setTitle("Searching Records");
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                        panel.setLayout(boxLayout);
-                        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                        JLabel IDLabel = new JLabel("Enter patient's National ID no.:");
-                        IDLabel.setBounds(10, 10, 80, 20);
-                        panel.add(IDLabel);
-
-                        JTextField IDText = new JTextField();
-                        IDText.setBounds(200, 10, 250, 25);
-                        panel.add(IDText);
-
-                        JButton searchButton = new JButton("SEARCH");
-                        searchButton.setBounds(10, 40, 250, 25);
-                        searchButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                String searchID = IDText.getText();
-
-                                for (int i = 0; i < finalCount; i++)
-                                    if (Objects.equals(patients[i][8], searchID) && !Objects.equals(patients[i][9], "D")) {
-                                        searched = 1;
-                                        lines[0] = i;
-                                        break;
-                                    } else
-                                        lines[0] = -2;
-                            }
-                        });
-                        panel.add(searchButton);
-
-                        frame.add(panel);
-                        frame.setVisible(true);
-                    }
-                });
-                panel.add(yesIDButton);
-
-                frame.add(panel);
-                frame.setVisible(true);
-
-                JButton noIDButton = new JButton("NO");
-                noIDButton.setBounds(100, 40, 80, 25);
-                noIDButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        frame.dispose();
-
-                        frame = new JFrame();
-                        panel = new JPanel();
-
-                        frame.setSize(960, 540);
-                        frame.setTitle("Searching Records");
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                        panel.setLayout(boxLayout);
-                        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                        JLabel lastNameLabel = new JLabel("Enter patient's last name:");
-                        lastNameLabel.setBounds(10, 10, 80, 20);
-                        panel.add(lastNameLabel);
-
-                        JTextField lastNameText = new JTextField();
-                        lastNameText.setBounds(200, 10, 250, 25);
-                        panel.add(lastNameText);
-
-                        JLabel firstNameLabel = new JLabel("Enter patient's first name:");
-                        firstNameLabel.setBounds(10, 40, 80, 20);
-                        panel.add(firstNameLabel);
-
-                        JTextField firstNameText = new JTextField();
-                        firstNameText.setBounds(200, 40, 80, 25);
-                        panel.add(firstNameText);
-
-                        JLabel birthdayLabel = new JLabel("Enter patient's birthday:");
-                        birthdayLabel.setBounds(10, 70, 80, 20);
-                        panel.add(birthdayLabel);
-
-                        JTextField birthdayText = new JTextField();
-                        birthdayText.setBounds(200, 70, 80, 25);
-                        panel.add(birthdayText);
-
-                        JButton searchButton = new JButton("SEARCH");
-                        searchButton.setBounds(10, 100, 80, 25);
-                        searchButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                String searchLast = lastNameText.getText();
-                                String searchFirst = firstNameText.getText();
-                                String searchBirthday = birthdayText.getText();
-
-                                for (int i = 0; i < finalCount; i++) {
-                                    try {
-                                        if (!Objects.equals(patients[i][9], "D") && patients[i][1].equalsIgnoreCase(searchLast) && patients[i][2].equalsIgnoreCase(searchFirst) && patients[i][4].equalsIgnoreCase(searchBirthday)) {
-                                            lines[searched] = i;
-                                            searched++;
-                                        }
-                                    } catch (NullPointerException ignored) {}
-                                }
-                                frame.dispose();
-
-                                frame = new JFrame();
-                                panel = new JPanel();
-
-                                frame.setSize(960, 540);
-                                frame.setTitle("Searching Records");
-                                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                                panel.setLayout(new BorderLayout());
-
-                                JLabel UID = new JLabel("Patient's UID");
-                                UID.setBounds(10, 10, 100, 20);
-                                panel.add(UID);
-
-                                JLabel lastName = new JLabel("Last Name");
-                                lastName.setBounds(100, 10, 100, 20);
-                                panel.add(lastName);
-
-                                JLabel firsName = new JLabel("First Name");
-                                firsName.setBounds(190, 10, 100, 20);
-                                panel.add(firsName);
-
-                                JLabel middleName = new JLabel("Middle Name");
-                                middleName.setBounds(280, 10, 100, 20);
-                                panel.add(middleName);
-
-                                JLabel birthday = new JLabel("Birthday");
-                                birthday.setBounds(370, 10, 100, 20);
-                                panel.add(birthday);
-
-                                JLabel gender = new JLabel("Gender");
-                                gender.setBounds(460, 10, 100, 20);
-                                panel.add(gender);
-
-                                JLabel address = new JLabel("Address");
-                                address.setBounds(550, 10, 100, 20);
-                                panel.add(address);
-
-                                JLabel phoneNumber = new JLabel("Phone Number");
-                                phoneNumber.setBounds(640, 10, 100, 20);
-                                panel.add(phoneNumber);
-
-                                JLabel nationalID = new JLabel("National ID. No");
-                                nationalID.setBounds(730, 10, 100, 20);
-                                panel.add(nationalID);
-
-                                int x = 10;
-                                int y = 10;
-                                String temp;
-                                for(int i = 0; i<lines.length; i++) {
-                                    y+=30;
-                                    for (int j = 0; j < 9; j++)
-                                        if(patients[i][0] != null)
-                                            if (patients[i][1].equalsIgnoreCase(searchLast) && patients[i][2].equalsIgnoreCase(searchFirst) && patients[i][4].equalsIgnoreCase(searchBirthday)) {
-                                                temp = patients[i][j];
-
-                                                JLabel print = new JLabel(temp);
-                                                print.setBounds(x, y, 100, 20);
-                                                panel.add(print);
-
-                                                x+=90;
-                                            }
-                                }
-
-                                JLabel enterUID = new JLabel("Enter the patient's UID: ");
-                                enterUID.setBounds(x, y+30, 100, 20);
-                                panel.add(enterUID);
-
-                                JTextField UIDText = new JTextField();
-                                UIDText.setBounds(x+100, y+30, 100, 25);
-                                UIDText.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        String input = UIDText.getText().toUpperCase();
-                                        for(int i=0; i< patients.length; i++)
-                                            if (Objects.equals(patients[i][0], input)) {
-                                                lines[0] = i;
-                                                searched = 1;
-                                                break;
-                                            }
-                                        if(searched!=1)
-                                            lines[0] = -2;
-                                    }
-                                });
-                                panel.add(UIDText);
-
-                                frame.add(panel);
-                                frame.setVisible(true);
-                            }
-                        });
-                        panel.add(searchButton);
-
-                        frame.add(panel);
-                        frame.setVisible(true);
-                    }
-                });
-                panel.add(noIDButton);
-
-                frame.add(panel);
-                frame.setVisible(true);
+                searchID();
             }
         });
         panel.add(noUIDButton);
 
-        frame.add(panel);
         frame.setVisible(true);
+    }
 
-        // if there is only 1 match search, return line number to line
-        // else: ask user to input the patient's UID to display
-        if(searched==0)
-            return -2;
-        else
+    public void searchID() {
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Searching Patient Records...");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel patientUIDLabel = new JLabel("Do you know the patient's National ID no.?");
+        patientUIDLabel.setBounds(10, 10, 500, 20);
+        panel.add(patientUIDLabel);
+
+        JButton yesUIDButton = new JButton("YES");
+        yesUIDButton.setBounds(10, 40, 80, 25);
+        yesUIDButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 2;
+                searchInput();
+            }
+        });
+        panel.add(yesUIDButton);
+
+        JButton noUIDButton = new JButton("NO");
+        noUIDButton.setBounds(100, 40, 80, 25);
+        noUIDButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                searchInput();
+            }
+        });
+        panel.add(noUIDButton);
+
+        frame.setVisible(true);
+    }
+
+    public void searchInput() {
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Searching Patient Records...");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        switch (scan) {
+            case 1 -> {
+                JLabel UIDLabel = new JLabel("Enter patient's UID: ");
+                UIDLabel.setBounds(10, 10, 120, 20);
+                panel.add(UIDLabel);
+
+                JTextField UIDText = new JTextField();
+                UIDText.setBounds(140, 10, 250, 25);
+                panel.add(UIDText);
+
+                JButton searchButton = new JButton("SEARCH");
+                searchButton.setBounds(10, 40, 100, 25);
+                searchButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        patientUID = UIDText.getText();
+                        frame.dispose();
+                        searchRecord();
+                    }
+                });
+                panel.add(searchButton);
+            }
+            case 2 -> {
+                JLabel IDLabel = new JLabel("Enter patient's National ID no.: ");
+                IDLabel.setBounds(10, 10, 180, 20);
+                panel.add(IDLabel);
+
+                JTextField IDText = new JTextField();
+                IDText.setBounds(200, 10, 250, 25);
+                panel.add(IDText);
+
+                JButton searchButton = new JButton("SEARCH");
+                searchButton.setBounds(10, 40, 100, 25);
+                searchButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        nationalIDNo = IDText.getText();
+                        frame.dispose();
+                        searchRecord();
+                    }
+                });
+                panel.add(searchButton);
+            }
+            case 3 -> {
+                JLabel lastNameLabel = new JLabel("Enter patient's Last name: ");
+                lastNameLabel.setBounds(10, 10, 180, 20);
+                panel.add(lastNameLabel);
+
+                JTextField lastNameText = new JTextField();
+                lastNameText.setBounds(200, 10, 250, 25);
+                panel.add(lastNameText);
+
+                JLabel firstNameLabel = new JLabel("Enter patient's First name: ");
+                firstNameLabel.setBounds(10, 40, 180, 20);
+                panel.add(firstNameLabel);
+
+                JTextField firstNameText = new JTextField();
+                firstNameText.setBounds(200, 40, 250, 25);
+                panel.add(firstNameText);
+
+                JLabel birthdayLabel = new JLabel("Enter patient's Birthday: ");
+                birthdayLabel.setBounds(10, 70, 180, 20);
+                panel.add(birthdayLabel);
+
+                JDateChooser dateChooser = new JDateChooser();
+                dateChooser.setBounds(200, 70, 250, 25);
+                dateChooser.setDateFormatString("yyyyMMdd");
+                frame.getContentPane().add(dateChooser);
+                panel.add(dateChooser);
+
+                JButton searchButton = new JButton("SEARCH");
+                searchButton.setBounds(10, 100, 100, 25);
+                searchButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        lastName = lastNameText.getText();
+                        firstName = firstNameText.getText();
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                        birthday = dateFormat.format(dateChooser.getDate());
+
+                        frame.dispose();
+                        searchRecord();
+                    }
+                });
+                panel.add(searchButton);
+            }
+        }
+        frame.setVisible(true);
+    }
+
+    public void searchRecord() {
+        switch (scan) {
+            case 1 -> {
+                for (int i = 0; i < countPatients; i++)
+                    if(Objects.equals(patientRecords[i][0], patientUID) && !Objects.equals(patientRecords[i][9], "D")) {
+                        searched = 1;
+                        lines[0] = i;
+                        search();
+                    }
+            }
+            case 2 -> {
+                for (int i = 0; i < countPatients; i++)
+                    if (Objects.equals(patientRecords[i][8], nationalIDNo) && !Objects.equals(patientRecords[i][9], "D")) {
+                        searched = 1;
+                        lines[0] = i;
+                        search();
+                    }
+            }
+            case 3 -> {
+                for (int i = 0; i < countPatients; i++) {
+                    try {
+                        if (!Objects.equals(patientRecords[i][9], "D") && patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
+                            lines[searched] = i;
+                            searched++;
+                        }
+                    } catch (NullPointerException ignored) {}
+                }
+                search();
+            }
+        }
+        if (searched == 0) {
+            noRecordFound = 1;
+            error();
+        }
+    }
+
+    public void search() {
+        if (searched==0) {
+            noRecordFound = 1;
+            error();
+        } else if (searched>1) {
+            frame = new JFrame();
+            panel = new JPanel();
+
+            frame.setSize(960, 540);
+            frame.setTitle("Searching Patient Records...");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(panel);
+
+            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+            panel.setLayout(boxLayout);
+            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+
+            JLabel UIDLabel = new JLabel("Patient's UID");
+            UIDLabel.setBounds(10, 10, 100, 20);
+            panel.add(UIDLabel);
+
+            JLabel lastNameLabel = new JLabel("Last Name");
+            lastNameLabel.setBounds(100, 10, 100, 20);
+            panel.add(lastNameLabel);
+
+            JLabel firsNameLabel = new JLabel("First Name");
+            firsNameLabel.setBounds(190, 10, 100, 20);
+            panel.add(firsNameLabel);
+
+            JLabel middleNameLabel = new JLabel("Middle Name");
+            middleNameLabel.setBounds(280, 10, 100, 20);
+            panel.add(middleNameLabel);
+
+            JLabel birthdayLabel = new JLabel("Birthday");
+            birthdayLabel.setBounds(370, 10, 100, 20);
+            panel.add(birthdayLabel);
+
+            JLabel genderLabel = new JLabel("Gender");
+            genderLabel.setBounds(460, 10, 100, 20);
+            panel.add(genderLabel);
+
+            JLabel addressLabel = new JLabel("Address");
+            addressLabel.setBounds(550, 10, 100, 20);
+            panel.add(addressLabel);
+
+            JLabel phoneNumberLabel = new JLabel("Phone Number");
+            phoneNumberLabel.setBounds(640, 10, 100, 20);
+            panel.add(phoneNumberLabel);
+
+            JLabel nationalIDLabel = new JLabel("National ID. No");
+            nationalIDLabel.setBounds(730, 10, 100, 20);
+            panel.add(nationalIDLabel);
+
+            int x = 10;
+            int y = 10;
+            String temp;
+            for (int i = 0; i<lines.length; i++) {
+                y += 30;
+                for (int j = 0; j < 9; j++)
+                    if (patientRecords[i][0] != null)
+                        if (patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
+                            temp = patientRecords[i][j];
+
+                            JLabel print = new JLabel(temp);
+                            print.setBounds(x, y, 100, 20);
+                            panel.add(print);
+
+                            x += 90;
+                        }
+            }
+            y += 30;
+            JLabel enterUID = new JLabel("Enter the patient's UID: ");
+            enterUID.setBounds(10, y, 100, 20);
+            panel.add(enterUID);
+
+            JTextField UIDText = new JTextField();
+            UIDText.setBounds(x + 100, y, 100, 25);
+            panel.add(UIDText);
+
+            JButton enterButton = new JButton("ENTER");
+            enterButton.setBounds(10, y+30, 100, 25);
+            enterButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    finalUID = UIDText.getText();
+                    for(int i=0; i< patientRecords.length; i++)
+                        if (Objects.equals(patientRecords[i][0], finalUID)) {
+                            line = i;
+                            searched = 1;
+                            break;
+                        }
+                    frame.dispose();
+                }
+            });
+            panel.add(enterButton);
+            frame.setVisible(true);
+
+            if (searched!=1) {
+                noRecordFound = 1;
+                error();
+            } else {
+                if (methodType == 0)
+                    displayPatient();
+                else if (methodType == 1)
+                    deleteInput();
+                else if (methodType == 2)
+                    editOption();
+            }
+        } else {
             line = lines[0];
+            if (methodType == 0)
+                displayPatient();
+            else if (methodType == 1)
+                deleteInput();
+            else if (methodType == 2)
+                editOption();
+        }
+    }
 
-        return line;
+//    task successful
+    public void confirmation() {
+        mm = new MainMenu();
+
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Task Successful");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(boxLayout);
+        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+
+        JLabel dialogue = new JLabel(successDialogue);
+        dialogue.setBounds(10, 10, 150, 20);
+        dialogue.setForeground(Color.BLUE);
+        panel.add(dialogue);
+
+        if (methodType == 0) {
+            JLabel decisionDialogue = new JLabel("Do you want to search for another patient record or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        } else if (methodType == 1) {
+            JLabel decisionDialogue = new JLabel("Do you want to delete another patient record or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        } else if (methodType == 2) {
+            JLabel decisionDialogue = new JLabel("Do you want to edit another patient record or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        }
+
+        JButton tryAgainButton = new JButton("Try Again");
+        tryAgainButton.setBounds(10, 10, 80, 25);
+        tryAgainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                if (methodType == 0)
+                    searchPatientRecord();
+                else if (methodType == 1)
+                    deletePatientRecord();
+                else if (methodType == 2)
+                    editPatientRecord();
+            }
+        });
+        panel.add(tryAgainButton);
+
+        JButton returnButton = new JButton("Main Menu");
+        returnButton.setBounds(100, 10, 80, 25);
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+        panel.add(returnButton);
+
+        frame.setVisible(true);
+    }
+
+//    error
+    public void error() {
+        mm = new MainMenu();
+
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        if (noRecordFound == 1)
+            frame.setTitle("No Record Found");
+        else
+            frame.setTitle("Error");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(boxLayout);
+        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+
+        JLabel dialogue;
+        if (noRecordFound == 1)
+            dialogue = new JLabel("No record found.");
+        else
+            dialogue = new JLabel("An error occurred. Please check if the file exists.");
+        dialogue.setBounds(10, 10, 150, 20);
+        dialogue.setForeground(Color.RED);
+        panel.add(dialogue);
+
+        if (methodType == 0) {
+            JLabel decisionDialogue = new JLabel("Would you like to try searching for another patient record again or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        } else if (methodType == 1) {
+            JLabel decisionDialogue = new JLabel("Would you like to try deleting another patient record again or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        } else if (methodType == 2) {
+            JLabel decisionDialogue = new JLabel("Would you like to try editing another patient record again or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
+        }
+
+        JButton tryAgainButton = new JButton("Try Again");
+        tryAgainButton.setBounds(10, 10, 80, 25);
+        tryAgainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                if (methodType == 0)
+                    searchPatientRecord();
+                else if (methodType == 1)
+                    deletePatientRecord();
+                else if (methodType == 2)
+                    editPatientRecord();
+            }
+        });
+        panel.add(tryAgainButton);
+
+        JButton returnButton = new JButton("Main Menu");
+        returnButton.setBounds(100, 10, 80, 25);
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+        panel.add(returnButton);
+
+        frame.setVisible(true);
     }
 
 // sort array by UID

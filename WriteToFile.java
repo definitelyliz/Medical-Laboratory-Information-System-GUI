@@ -30,7 +30,6 @@ public class WriteToFile {
             bw.close();
             error = 0;
         } catch(IOException e){
-            System.out.println("Error occurred. Please try again"); //move to where method is called
             error = 1;
         }
         return error;
@@ -53,7 +52,6 @@ public class WriteToFile {
             bw.close();
             error = 0;
         } catch(IOException e){
-            System.out.println("Error occurred. Please try again"); //move to where method is called
             error = 1;
         }
         return error;
@@ -78,7 +76,6 @@ public class WriteToFile {
             bw.close();
             error = 0;
         } catch(IOException e){
-            System.out.println("Error occurred. Please try again"); //move to where method is called
             error = 1;
         }
         return error;
