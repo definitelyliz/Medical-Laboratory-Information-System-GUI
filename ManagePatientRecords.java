@@ -31,10 +31,10 @@ import java.util.*;
 public class ManagePatientRecords implements ActionListener {
     private ArrayList<Patient> patients;
 
-    private ManageLaboratoryRequest mlr;
-    private WriteToFile wtf;
-    private ReadFile rf;
-    private MainMenu mm;
+    private ManageLaboratoryRequest manageLaboratoryRequest;
+    private WriteToFile writeToFile;
+    private ReadFile readFile;
+    private MainMenu mainMenu;
 
     private JFrame frame;
     private JPanel panel;
@@ -67,7 +67,7 @@ public class ManagePatientRecords implements ActionListener {
     private String[][] patientRecords;
 
     public void managePatientRecords() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
         frame = new JFrame();
         panel = new JPanel();
 
@@ -124,12 +124,12 @@ public class ManagePatientRecords implements ActionListener {
         else if (e.getSource() == searchButton)
             searchPatientRecord();
         else if (e.getSource() == returnButton)
-            mm.mainMenu();
+            mainMenu.mainMenu();
     }
 
-//    generates Patient UID
+    /* generates Patient UID */
     public String generateUID() {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
         String[] tempUID = new String[7];
         tempUID[0] = "P";
@@ -157,8 +157,8 @@ public class ManagePatientRecords implements ActionListener {
 
         //GET UID FROM PATIENTS.TXT
         String fileName = "Patients.txt";
-        int isFirst = rf.readUID(fileName);
-        String prevUID = rf.getUID();
+        int isFirst = readFile.readUID(fileName);
+        String prevUID = readFile.getUID();
 
         String D;
         String E;
@@ -214,11 +214,11 @@ public class ManagePatientRecords implements ActionListener {
 
     }
 
-//    adds a new patient record
+    /* adds a new patient record */
     public void addNewPatient() {
         patients = new ArrayList<>();
-        wtf = new WriteToFile();
-        mm = new MainMenu();
+        writeToFile = new WriteToFile();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -361,7 +361,7 @@ public class ManagePatientRecords implements ActionListener {
                 patients.add(patient);
 
                 String filename = "Patients.txt";
-                int error = wtf.writeToPatients(filename, patient);
+                int error = writeToFile.writeToPatients(filename, patient);
                 if (error == 1) {
                     frame = new JFrame();
                     panel = new JPanel();
@@ -424,7 +424,7 @@ public class ManagePatientRecords implements ActionListener {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         frame.dispose();
-                        mm.mainMenu();
+                        mainMenu.mainMenu();
                     }
                 });
                 panel.add(returnButton);
@@ -479,7 +479,7 @@ public class ManagePatientRecords implements ActionListener {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         frame.dispose();
-                        mm.mainMenu();
+                        mainMenu.mainMenu();
                     }
                 });
                 panel.add(returnButton);
@@ -494,18 +494,22 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    searches for a patient record - methodType 0
+    /*
+    * searchPatientRecord
+    * main search method
+    * methodType 0
+    * */
     public void searchPatientRecord() {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
         methodType = 0;
 
         // get all lines in Patients.txt and save to String[][] patients
         String fileName = "Patients.txt";
-        int error = rf.readPatients(fileName);
+        int error = readFile.readPatients(fileName);
         if (error==1)
             error();
-        patientRecords = rf.getTempSearch();
+        patientRecords = readFile.getTempSearch();
 
         // count total non-null entries in String[][] patients
         for (String[] patient : patientRecords)
@@ -514,10 +518,10 @@ public class ManagePatientRecords implements ActionListener {
 
         // get all lines in services.txt and save to String[][] patients
         fileName = "services.txt";
-        error = rf.readServices(fileName);
+        error = readFile.readServices(fileName);
         if (error==1)
             error();
-        services = rf.getTempServ();
+        services = readFile.getTempServ();
         services = sortArray(services);
 
         // count all services
@@ -531,9 +535,12 @@ public class ManagePatientRecords implements ActionListener {
         searchUID();
     }
 
-//    searchPatientRecord()
+    /*
+    * searchPatientRecord
+    * displays patient records
+    * */
     public void displayPatient() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -619,10 +626,10 @@ public class ManagePatientRecords implements ActionListener {
             String description = services[i][1];
 
             String fileName = code + "_Requests.txt";
-            int error = rf.readRequests(fileName);
+            int error = readFile.readRequests(fileName);
             if (error == 1)
                 error();
-            String[][] requests = rf.getTempReq();
+            String[][] requests = readFile.getTempReq();
             requests = sortDate(requests);
 
             int length = 0;
@@ -668,7 +675,10 @@ public class ManagePatientRecords implements ActionListener {
         printResultsDialogue();
     }
 
-//    searchPatientRecord()
+    /*
+    * searchPatientRecord
+    * asks user if they want to print labs
+    * */
     public void printResultsDialogue() {
         JFrame popUpFrame = new JFrame();
         JPanel popUpPanel = new JPanel();
@@ -706,7 +716,7 @@ public class ManagePatientRecords implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 popUpFrame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
         popUpPanel.add(noButton);
@@ -715,11 +725,15 @@ public class ManagePatientRecords implements ActionListener {
         popUpFrame.setVisible(true);
     }
 
-//    searchPatientRecord()
+    /*
+    * searchPatientRecord
+    * prints labs
+    * */
     public void printResults() {
-        mlr = new ManageLaboratoryRequest();
+        manageLaboratoryRequest = new ManageLaboratoryRequest();
 
-        String[] ret = mlr.searchLaboratoryRequest(2);
+        manageLaboratoryRequest.getLaboratoryData();
+        String[] ret = manageLaboratoryRequest.getData();
 
         String name = patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3];
         String sUID = ret[0];
@@ -748,19 +762,23 @@ public class ManagePatientRecords implements ActionListener {
         }
     }
 
-//    deletes a patient record - methodType 1
+    /*
+    * deletePatientRecord
+    * main delete method
+    * methodType 1
+    * */
     public void deletePatientRecord() {
-        mm = new MainMenu();
-        rf = new ReadFile();
+        mainMenu = new MainMenu();
+        readFile = new ReadFile();
 
         methodType = 1;
 
         // get all lines in Patients.txt and save to String[][] patients
         String fileName = "Patients.txt";
-        int error = rf.readPatients(fileName);
+        int error = readFile.readPatients(fileName);
         if (error==1)
             error();
-        patientRecords = rf.getTempSearch();
+        patientRecords = readFile.getTempSearch();
 
         // count total non-null entries in String[][] patients
         for (String[] patient : patientRecords)
@@ -770,7 +788,10 @@ public class ManagePatientRecords implements ActionListener {
         searchUID();
     }
 
-//    deletePatientRecord
+    /*
+    * deletePatientRecord
+    * accepts input for reason to delete
+    * */
     public void deleteInput() {
         frame = new JFrame();
         panel = new JPanel();
@@ -805,7 +826,10 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    deletePatientRecord
+    /*
+    * deletePatientRecord
+    * deletes patient record from text file
+    * */
     public void delete() {
         String D = "D;";
         String newLine = String.join("", D, deleteReason);
@@ -839,19 +863,23 @@ public class ManagePatientRecords implements ActionListener {
         }
     }
 
-//    edits a patients address or phone number - methodType 2
+    /*
+     * editPatientRecord
+     * main edit method
+     * methodType 2
+     * */
     public void editPatientRecord() {
-        mm = new MainMenu();
-        rf = new ReadFile();
+        mainMenu = new MainMenu();
+        readFile = new ReadFile();
 
         methodType = 2;
 
         // get all lines in Patients.txt and save to String[][] patients
         String fileName = "Patients.txt";
-        int error = rf.readPatients(fileName);
+        int error = readFile.readPatients(fileName);
         if (error==1)
             error();
-        patientRecords = rf.getTempSearch();
+        patientRecords = readFile.getTempSearch();
 
         // count total non-null entries in String[][] patients
         for (String[] patient : patientRecords)
@@ -861,7 +889,10 @@ public class ManagePatientRecords implements ActionListener {
         searchUID();
     }
 
-//    editPatientRecord()
+    /*
+     * editPatientRecord
+     * asks user what they want to edit; address or phone number
+     * */
     public void editOption() {
         frame = new JFrame();
         panel = new JPanel();
@@ -906,7 +937,10 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    editPatientRecord()
+    /*
+     * editPatientRecord
+     * accepts new value for address or phone number
+     * */
     public void editInput() {
         frame = new JFrame();
         panel = new JPanel();
@@ -965,7 +999,10 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    editPatientRecord()
+    /*
+    * editPatientRecord
+    * edits patient record from text file
+    * */
     public void edit() {
         String fileName = "Patients.txt";
 
@@ -1003,6 +1040,9 @@ public class ManagePatientRecords implements ActionListener {
         }
     }
 
+    /*
+    * asks user if they know the patient's UID
+    * */
     public void searchUID() {
         frame = new JFrame();
         panel = new JPanel();
@@ -1044,6 +1084,9 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+     * asks user if they know the patient's national ID no.
+     * */
     public void searchID() {
         frame = new JFrame();
         panel = new JPanel();
@@ -1085,6 +1128,9 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+     *  accepts user input for search key/s
+     * */
     public void searchInput() {
         frame = new JFrame();
         panel = new JPanel();
@@ -1187,6 +1233,9 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+     * searches for patient record
+     * */
     public void searchRecord() {
         switch (scan) {
             case 1 -> {
@@ -1223,6 +1272,10 @@ public class ManagePatientRecords implements ActionListener {
         }
     }
 
+    /*
+     * checks if there were patients found
+     * displays records there are multiple records found
+     * */
     public void search() {
         if (searched==0) {
             noRecordFound = 1;
@@ -1342,15 +1395,15 @@ public class ManagePatientRecords implements ActionListener {
         }
     }
 
-//    task successful
+    /* message dialogue for successful transaction */
     public void confirmation() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
 
         frame.setSize(960, 540);
-        frame.setTitle("Task Successful");
+        frame.setTitle("Transaction Successful");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(panel);
 
@@ -1399,7 +1452,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
         panel.add(returnButton);
@@ -1407,18 +1460,15 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-//    error
+    /* message dialogue for unsuccessful transaction */
     public void error() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
 
         frame.setSize(960, 540);
-        if (noRecordFound == 1)
-            frame.setTitle("No Record Found");
-        else
-            frame.setTitle("Error");
+        frame.setTitle("Transaction Unsuccessful");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(panel);
 
@@ -1471,7 +1521,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
         panel.add(returnButton);
@@ -1479,7 +1529,7 @@ public class ManagePatientRecords implements ActionListener {
         frame.setVisible(true);
     }
 
-// sort array by UID
+    /* sorts array by UID */
     public static String[][] sortArray(String[][] data) {
         int nonNull = 0;
         for(int i = 0; i < data[0].length; i++) {
@@ -1508,7 +1558,7 @@ public class ManagePatientRecords implements ActionListener {
         return newData;
     }
 
-// sort array by date
+    /* sorts array by date */
     public static String[][] sortDate(String[][] data) {
         int nonNull = 0;
         for(int i = 0; i < data[0].length; i++) {
