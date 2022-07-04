@@ -698,14 +698,14 @@ public class ManageServices {
             panel.add(price);
             try {
                 int y = 30;
-                for(int i=0; i < services.length; i++) {
-                    temp = services[i][1].split(" ");
-                    for (int j = 0; j < temp.length; j++) {
-                        if (!Objects.equals(services[i][3], "D"))
-                            if (temp[j].equalsIgnoreCase(input)) {
-                                finalCode = new JLabel(services[i][0]);
-                                finalDesc = new JLabel(services[i][1]);
-                                finalPrice = new JLabel(services[i][2]);
+                for (String[] service : services) {
+                    temp = service[1].split(" ");
+                    for (String s : temp) {
+                        if (!Objects.equals(service[3], "D"))
+                            if (s.equalsIgnoreCase(input)) {
+                                finalCode = new JLabel(service[0]);
+                                finalDesc = new JLabel(service[1]);
+                                finalPrice = new JLabel(service[2]);
 
                                 finalCode.setBounds(10, y, 500, 25);
                                 finalDesc.setBounds(150, y, 500, 25);

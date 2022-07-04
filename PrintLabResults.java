@@ -24,8 +24,6 @@ import com.itextpdf.layout.property.TextAlignment;
 import java.io.IOException;
 
 public class PrintLabResults {
-    private String filename1;
-    private String dir1;
 
     public static void printPdf(String filename, String name, String sUID, String pUID, String rDate, String birthday, String gender, String phoneNo, int age, String t, String r)
             throws IOException {
@@ -107,7 +105,6 @@ public class PrintLabResults {
         canvas.closePathStroke();
 
         doc.close();
-        System.out.println(filename + " has been saved to " + currDir);
     }
 
     private static void addLine(PdfCanvas canvas) {

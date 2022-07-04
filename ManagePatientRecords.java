@@ -760,8 +760,12 @@ public class ManagePatientRecords implements ActionListener {
         String pdfName = patientRecords[line][1] + "_" + sUID + "_" + rDate + ".pdf";
         try {
             PrintLabResults.printPdf(pdfName, name, sUID, pUID, rDate, birthday, gender, phoneNo, age, test, result);
+            String currDir = System.getProperty("user.dir");
+            successDialogue = pdfName + " has been saved to " + currDir;
+            confirmation();
         } catch (IOException ioe) {
             ioe.printStackTrace();
+            error();
         }
     }
 
