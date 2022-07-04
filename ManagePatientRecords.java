@@ -1076,6 +1076,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
+                scan = 3;
                 searchID();
             }
         });
@@ -1120,6 +1121,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
+                scan = 3;
                 searchInput();
             }
         });
@@ -1138,7 +1140,7 @@ public class ManagePatientRecords implements ActionListener {
         frame.setSize(960, 540);
         frame.setTitle("Searching Patient Records...");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(panel);
+//        frame.add(panel);
 
         panel.setLayout(null);
 
@@ -1230,6 +1232,7 @@ public class ManagePatientRecords implements ActionListener {
                 panel.add(searchButton);
             }
         }
+        frame.add(panel);
         frame.setVisible(true);
     }
 

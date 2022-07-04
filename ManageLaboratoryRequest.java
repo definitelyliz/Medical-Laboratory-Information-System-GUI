@@ -468,44 +468,43 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setSize(960, 540);
         frame.setTitle("Search Laboratory Request");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(panel);
 
-        panel.setLayout(new BorderLayout());
+        panel.setLayout(null);
 
         JLabel UIDLabel = new JLabel("Request's UID");
         UIDLabel.setBounds(10, 10, 100, 20);
         panel.add(UIDLabel);
 
         JLabel labTestTypeLabel = new JLabel("Lab Test Type");
-        labTestTypeLabel.setBounds(100, 10, 100, 20);
+        labTestTypeLabel.setBounds(200, 10, 100, 20);
         panel.add(labTestTypeLabel);
 
         JLabel requestDateLabel = new JLabel("Request Date");
-        requestDateLabel.setBounds(190, 10, 100, 20);
+        requestDateLabel.setBounds(390, 10, 100, 20);
         panel.add(requestDateLabel);
 
         JLabel resultLabel = new JLabel("Result");
-        resultLabel.setBounds(280, 10, 100, 20);
+        resultLabel.setBounds(580, 10, 100, 20);
         panel.add(resultLabel);
 
         JLabel UID = new JLabel(display[0]);
-        UID.setBounds(10, 10, 100, 20);
+        UID.setBounds(10, 30, 170, 20);
         panel.add(UID);
 
         JLabel labTestType = new JLabel(display[1]);
-        labTestType.setBounds(100, 10, 100, 20);
+        labTestType.setBounds(200, 30, 170, 20);
         panel.add(labTestType);
 
         JLabel requestDate = new JLabel(display[2]);
-        requestDate.setBounds(190, 10, 100, 20);
+        requestDate.setBounds(390, 30, 170, 20);
         panel.add(requestDate);
 
         JLabel result = new JLabel(display[3]);
-        result.setBounds(280, 10, 100, 20);
+        result.setBounds(580, 30, 170, 20);
         panel.add(result);
 
         JButton doneButton = new JButton("DONE");
-        doneButton.setBounds(10, 40, 80, 25);
+        doneButton.setBounds(10, 70, 80, 25);
         doneButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -516,6 +515,7 @@ public class ManageLaboratoryRequest implements ActionListener {
         });
         panel.add(doneButton);
 
+        frame.add(panel);
         frame.setVisible(true);
     }
 
@@ -785,11 +785,15 @@ public class ManageLaboratoryRequest implements ActionListener {
     }
 
     public void searchRecord() {
+        rf = new ReadFile();
+
         switch (scan) {
             case 1 -> {
                 String code = requestUID.substring(0, 3);
                 String fileName = code + FILE_NAME;
-                // get all lines laboratory requests file and save to String[][] labRecords
+                finalFileName = fileName;
+                finalRequestUID = requestUID;
+                // get all lines in laboratory requests file and save to String[][] labRecords
                 int error = rf.readRequests(fileName);
                 if (error == 1)
                     error();
@@ -803,8 +807,32 @@ public class ManageLaboratoryRequest implements ActionListener {
                             break;
                         }
 
+                // get all lines in services file and save to String[][] serviceRecords
+                fileName = "services.txt";
+                error = rf.readServices(fileName);
+                if(error==1)
+                    error();
+                serviceRecords = rf.getTempServ();
+                // count total non-null entries in String[][] services
+                for (String[] service : serviceRecords)
+                    for (int j = 0; j < serviceRecords[0].length; j++)
+                        if (service[0] != null && service[0].length() == 3) {
+                            countServices++;
+                            break;
+                        }
+                // check for code match
+                for (int i = 0; i < countServices; i++)
+                    if (code.equals(serviceRecords[i][0])) {
+                        display[1] = serviceRecords[i][1];
+                        break;
+                    }
+
+                // check for UID match
                 for(int i=0; i<countRequests; i++)
                     if (Objects.equals(requestUID, labRecords[i][0])) {
+                        display[0] = labRecords[i][0];
+                        display[2] = labRecords[i][2];
+                        display[3] = labRecords[i][4];
                         searched = 1;
                         line = i;
                         search();
@@ -854,6 +882,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                         }
                     Arrays.stream(requestsTemp).forEach(x -> Arrays.fill(x, null));
                 }
+                search();
             }
         }
         if (searched == 0) {
@@ -863,6 +892,8 @@ public class ManageLaboratoryRequest implements ActionListener {
     }
 
     public void search() {
+        rf = new ReadFile();
+
         if (searched==0) {
             noRecordFound = 1;
             error();
@@ -875,53 +906,50 @@ public class ManageLaboratoryRequest implements ActionListener {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.add(panel);
 
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+            panel.setLayout(null);
 
             JLabel UIDLabel = new JLabel("Request's UID");
             UIDLabel.setBounds(10, 10, 100, 20);
             panel.add(UIDLabel);
 
             JLabel labTestTypeLabel = new JLabel("Lab Test Type");
-            labTestTypeLabel.setBounds(100, 10, 100, 20);
+            labTestTypeLabel.setBounds(200, 10, 100, 20);
             panel.add(labTestTypeLabel);
 
             JLabel requestDateLabel = new JLabel("Request Date");
-            requestDateLabel.setBounds(190, 10, 100, 20);
+            requestDateLabel.setBounds(390, 10, 100, 20);
             panel.add(requestDateLabel);
 
             JLabel resultLabel = new JLabel("Result");
-            resultLabel.setBounds(280, 10, 100, 20);
+            resultLabel.setBounds(580, 10, 100, 20);
             panel.add(resultLabel);
 
-            int x = 10;
             int y = 10;
             for (int i = 0; i < searched; i++) {
                 y+=20;
                 JLabel UID = new JLabel(savedRequests[i][0]);
-                UID.setBounds(x, y, 170, 20);
+                UID.setBounds(10, y, 170, 20);
                 panel.add(UID);
-                x+=190;
+
                 JLabel labTestType = new JLabel(savedRequests[i][1]);
-                labTestType.setBounds(x, y, 170, 20);
+                labTestType.setBounds(200, y, 170, 20);
                 panel.add(labTestType);
-                x+=190;
+
                 JLabel requestDate = new JLabel(savedRequests[i][2]);
-                requestDate.setBounds(x, y, 170, 20);
+                requestDate.setBounds(390, y, 170, 20);
                 panel.add(requestDate);
-                x+=190;
+
                 JLabel result = new JLabel(savedRequests[i][3]);
-                result.setBounds(x, y, 170, 20);
+                result.setBounds(580, y, 170, 20);
                 panel.add(result);
             }
             y+=30;
             JLabel enterUID = new JLabel("Enter the request's UID: ");
-            enterUID.setBounds(10, y, 100, 20);
+            enterUID.setBounds(10, y, 140, 20);
             panel.add(enterUID);
 
             JTextField UIDText = new JTextField();
-            UIDText.setBounds(x + 100, y, 100, 25);
+            UIDText.setBounds(150, y, 250, 25);
             panel.add(UIDText);
 
             JButton enterButton = new JButton("ENTER");
@@ -960,7 +988,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                             display[1] = tempService[i][1];
 
                     for(int i = 0; i<countRequests; i++)
-                        if (Objects.equals(requestUID, temp[i][0])) {
+                        if (Objects.equals(finalRequestUID, temp[i][0])) {
                             searched = 1;
                             line = i;
                             display[0] = temp[i][0];
@@ -969,24 +997,27 @@ public class ManageLaboratoryRequest implements ActionListener {
                             break;
                         }
                     frame.dispose();
+                    searchVerify();
                 }
             });
             panel.add(enterButton);
             frame.setVisible(true);
+        } else {
+            if (methodType == 0)
+                displayLaboratoryRequest();
+            else if (methodType == 1)
+                deleteInput();
+            else if (methodType == 2)
+                editVerify();
+            else if (methodType == 3)
+                laboratoryData();
+        }
+    }
 
-            if (searched!=1) {
-                noRecordFound = 1;
-                error();
-            } else {
-                if (methodType == 0)
-                    displayLaboratoryRequest();
-                else if (methodType == 1)
-                    deleteInput();
-                else if (methodType == 2)
-                    editVerify();
-                else if (methodType == 3)
-                    laboratoryData();
-            }
+    public void searchVerify() {
+        if (searched!=1) {
+            noRecordFound = 1;
+            error();
         } else {
             if (methodType == 0)
                 displayLaboratoryRequest();
@@ -1202,6 +1233,8 @@ public class ManageLaboratoryRequest implements ActionListener {
     }
 
     public void laboratoryData() {
+        rf = new ReadFile();
+
         String code = finalFileName.substring(0, 3);
         rf.readRequests(finalFileName);
         String[][] requests = rf.getTempReq();

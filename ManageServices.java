@@ -20,13 +20,25 @@ import java.util.*;
 
 public class ManageServices {
     private ArrayList<Service> services;
+    String fileName = "services.txt";
 
     private MainMenu mm;
     private ReadFile rf;
     private WriteToFile wtf;
-
+    private String code;
+    private String desc;
+    private int price;
+    private int scan;
+    private int line;
     private JFrame frame;
     private JPanel panel;
+    private JLabel added;
+    private JTextField getCode;
+    private JTextField getDesc;
+    private JTextField getPrice;
+    private JTextField inputKey;
+    private JTextField inputCode;
+    private JTextField delReason;
 
     public void manageServices() {
         mm = new MainMenu();
@@ -41,255 +53,580 @@ public class ManageServices {
 
         panel.setLayout(null);
 
-        JLabel addLabel = new JLabel("[1] Add New Service");
-        addLabel.setBounds(10, 10, 500, 25);
-        panel.add(addLabel);
+        JLabel selectLabel = new JLabel("Select a transaction:");
+        selectLabel.setBounds(10, 10, 250, 25);
 
-        JLabel editLabel = new JLabel("[2] Search Service");
-        editLabel.setBounds(10, 30, 500, 25);
-        panel.add(editLabel);
-
-        JLabel deleteLabel = new JLabel("[3] Delete Service");
-        deleteLabel.setBounds(10, 50, 500, 25);
-        panel.add(deleteLabel);
-
-        JLabel searchLabel = new JLabel("[4] Edit Service");
-        searchLabel.setBounds(10, 70, 500, 25);
-        panel.add(searchLabel);
-
-        JLabel returnLabel = new JLabel("[X] Return to Main Menu");
-        returnLabel.setBounds(10, 90, 500, 25);
-        panel.add(returnLabel);
-
-        JLabel selectLabel = new JLabel("Select a transaction: ");
-        selectLabel.setBounds(10, 110, 500, 25);
-        panel.add(selectLabel);
-
-        JTextField selectText = new JTextField(20);
-        selectText.setBounds(140, 110, 160, 25);
-        selectText.addActionListener(new ActionListener() {
+        JButton add = new JButton("Add New Service");
+        add.setBounds(10, 30, 250, 25);
+        add.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String input = selectText.getText().toUpperCase();
                 frame.dispose();
-                switch (input) {
-                    case "1" -> addService(0);
-                    case "2" -> searchService();
-                    case "3" -> deleteService();
-                    case "4" -> editService();
-                    case "X" -> mm.mainMenu();
-                    default -> manageServices();
-                }
+                addGui();
             }
         });
-        panel.add(selectText);
+
+        JButton search = new JButton("Search Service");
+        search.setBounds(10, 50, 250, 25);
+        search.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                searchGui();
+            }
+        });
+
+        JButton delete = new JButton("Delete Service");
+        delete.setBounds(10, 70, 250, 25);
+        delete.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                deleteGui();
+            }
+        });
+
+        JButton edit = new JButton("Edit Service");
+        edit.setBounds(10, 90, 250, 25);
+        edit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                editGui();
+            }
+        });
+
+        JButton menu = new JButton("Main Menu");
+        menu.setBounds(10, 110, 250, 25);
+        menu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+
+        panel.add(selectLabel);
+        panel.add(add);
+        panel.add(search);
+        panel.add(delete);
+        panel.add(edit);
+        panel.add(menu);
+
         frame.setVisible(true);
     }
 
-/*
-* adds a new service
-* accepts parameter int type for editService
-* */
+    /*
+     * adds a new service
+     * accepts parameter int type for editService
+     * */
+
     public void addService(int type) {
-        mm = new MainMenu();
-        rf = new ReadFile();
-        wtf = new WriteToFile();
-        services = new ArrayList<>();
-        Scanner scanner = new Scanner(System.in);
-
-        String fileName = "services.txt";
-        System.out.print("Enter unique 3-code Service Code: ");
-        String code = scanner.next().toUpperCase();
-        scanner.nextLine();
-        System.out.print("Enter laboratory service Description: ");
-        String description = scanner.nextLine();
-        System.out.print("Enter laboratory service Price: ");
-        int price = 0;
-        try {
-            price = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid format! Please try again.");
-            addService(0);
-        }
-
         //check if service code already exists
         int exists;
         exists = rf.checkCode(fileName, code);
-        do {
-            if (exists == 1) {
-                System.out.print("This service code already exists. Please enter a new code: ");
-                code = scanner.next().toUpperCase();
-            }
-            exists = rf.checkCode(fileName, code);
-        } while(exists==1);
 
-        Service service = new Service(code, description, price);
-        services.add(service);
+        if (exists == 1) {
+            JLabel codeExists = new JLabel("Service code already exists! Please try again!");
+            codeExists.setBounds(10, 260, 300, 25);
 
-        int error = wtf.writeToServices(fileName, service);
-        if(error==1)
-            addService(0);
-        else
-            System.out.println(code + " " + description + " has been added.");
-        System.out.println();
+            addGui();
+            panel.add(codeExists);
+        }else{
+            Service service = new Service(code, desc, price);
+            services.add(service);
 
-        if(type == 1)
-            return;
-
-        String input;
-        do {
-            System.out.print("Do you want to add another service? [Y/N]: ");
-            input = scanner.next().toUpperCase();
-            if(input.equals("Y"))
+            int error = wtf.writeToServices(fileName, service);
+            if (error == 1)
                 addService(0);
-            else if(input.equals("N"))
-                mm.mainMenu();
             else
-                System.out.println("Invalid input! Please enter a valid input.");
-        } while(!input.equals("Y") && !input.equals("N"));
+                added = new JLabel(code + " " + desc + " has been added.");
+                added.setBounds(10, 70, 165, 25);
+                panel.add(added);
+            if (type == 1)
+                return;
+
+                frame.dispose();
+
+                frame = new JFrame();
+                panel = new JPanel();
+                frame.add(panel, BorderLayout.LINE_START);
+                frame.setSize(960, 540);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setTitle("Add Service");
+                frame.add(panel);
+                panel.setLayout(null);
+
+                panel.add(added);
+                JLabel newCode = new JLabel("Do you want to add another service?");
+                newCode.setBounds(10, 10, 250, 25);
+
+                JButton addMore = new JButton("YES");
+                addMore.setBounds(10, 30, 165, 25);
+                addMore.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                      frame.dispose();
+                      addGui();
+                    }
+                });
+
+            JButton dontAdd = new JButton("NO");
+            dontAdd.setBounds(180, 30, 165, 25);
+            dontAdd.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    mm.mainMenu();
+                }
+            });
+
+            panel.add(newCode);
+            panel.add(addMore);
+            panel.add(dontAdd);
+
+            frame.setVisible(true);
+
+        }
     }
 
-//    searches for a service
+    //    searches for a service
     public void searchService() {
         mm = new MainMenu();
-        Scanner scanner = new Scanner(System.in);
 
-        int line=search();
-        String input;
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Search Service");
+        frame.add(panel);
+
+        JLabel notFound = new JLabel(" ");
+        notFound.setBounds(10, 10, 500, 25);
+
+        JLabel tryAgain = new JLabel(" ");
+        tryAgain.setBounds(10, 30, 500, 25);
+
+
+        line = search();
+
+        JButton searchAgain;
+        JButton retMenu;
 
         if(line==-1)
             searchService();
         else if(line==-2) {
-            System.out.println("No record found.");
-            do {
-                System.out.println("Would you like to try again or return to the main menu?");
-                System.out.println("[1] Search for another service");
-                System.out.println("[2] Return to the Main Menu");
-                System.out.print("Select a transaction: ");
-                input = scanner.next().toUpperCase();
+            notFound.setText("No record found.");
+            tryAgain.setText("Would you like to try again or return to the main menu?");
 
-                if(!input.equals("1") && !input.equals("2")) {
-                    System.out.println("Invalid input format! Please try again");
-                    searchService();
+            searchAgain = new JButton("Search again");
+            searchAgain.setBounds(10, 55, 165, 25);
+            searchAgain.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    searchGui();
                 }
-            } while(!input.equals("1") && !input.equals("2"));
-            if(input.equals("1"))
-                searchService();
-            else
-                mm.mainMenu();
-        } else {
-            do {
-                System.out.println();
-                System.out.print("Do you want to search again? [Y/N]: ");
-                input = scanner.next().toUpperCase();
-                System.out.println();
-                if(input.equals("Y"))
-                    searchService();
-                else if(input.equals("N"))
+            });
+
+            retMenu = new JButton("Return to Main Menu");
+            retMenu.setBounds(180, 55, 165, 25);
+            retMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
                     mm.mainMenu();
-                else
-                    System.out.println("Invalid input! Please enter a valid input.");
-            } while(!input.equals("Y") && !input.equals("N"));
+                }
+            });
+            panel.add(notFound);
+            panel.add(tryAgain);
+            panel.add(searchAgain);
+            panel.add(retMenu);
+
+            frame.setVisible(true);
+        } else {
+            tryAgain.setText("Would you like to search for another service?");
+            tryAgain.setBounds(10,80,500,25);
+
+            searchAgain = new JButton("Search again");
+            searchAgain.setBounds(10, 110, 165, 25);
+            searchAgain.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    searchGui();
+                }
+            });
+
+            retMenu = new JButton("Return to Main Menu");
+            retMenu.setBounds(180, 110, 165, 25);
+            retMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    mm.mainMenu();
+                }
+            });
+
+            panel.add(tryAgain);
+            panel.add(searchAgain);
+            panel.add(retMenu);
+
+            frame.setVisible(true);
         }
+        frame.setVisible(true);
     }
 
-//    deletes a service
+    //    deletes a service
     public void deleteService() {
         mm = new MainMenu();
-        Scanner scanner = new Scanner(System.in);
 
-        int line = search();
-        String input;
+        frame = new JFrame();
+        panel = new JPanel();
 
-        if(line==-1)
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        JLabel notFound = new JLabel(" ");
+        notFound.setBounds(10, 60, 500, 25);
+        panel.add(notFound);
+
+        JLabel tryAgain = new JLabel(" ");
+        tryAgain.setBounds(10, 80, 500, 25);
+
+        line = search();
+
+        JButton retMenu;
+        JButton searchAgain;
+        if (line == -1)
             deleteService();
-        else if(line==-2) {
-            System.out.println("No record found.");
-            do {
-                System.out.println("Would you like to search again or return to the main menu?");
-                System.out.println("[1] Delete a service");
-                System.out.println("[2] Return to the Main Menu");
-                System.out.print("Select a transaction: ");
-                input = scanner.next().toUpperCase();
+        else if (line == -2) {
+            notFound.setText("No record found.");
+            tryAgain.setText("Would you like to try again or return to the main menu?");
 
-                if(!input.equals("1") && !input.equals("2")) {
-                    System.out.println("Invalid input format! Please try again");
-                    deleteService();
+            searchAgain = new JButton("Delete again");
+            searchAgain.setBounds(10, 110, 165, 25);
+            searchAgain.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    searchService();
                 }
-            } while(!input.equals("1") && !input.equals("2"));
-            if(input.equals("1"))
-                deleteService();
-            else
-                mm.mainMenu();
-        } else {
-            delete(1, line);
+            });
 
-            System.out.println();
-            do {
-                System.out.print("Do you want to delete another patient record? [Y/N]: ");
-                input = scanner.next().toUpperCase();
-                if(input.equals("Y"))
-                    deleteService();
-                else if(input.equals("N"))
+
+            retMenu = new JButton("Return to Main Menu");
+            retMenu.setBounds(180, 110, 165, 25);
+            retMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
                     mm.mainMenu();
-                else
-                    System.out.println("Invalid input! Please enter a valid input.");
-            } while(!input.equals("Y") && !input.equals("N"));
+                }
+            });
+
+            panel.add(tryAgain);
+            panel.add(searchAgain);
+            panel.add(retMenu);
+
+            frame.setVisible(true);
+        } else {
+            delete(1,line);
+            tryAgain.setText("Would you like to delete another service?");
+            tryAgain.setBounds(10, 50, 500, 25);
+
+            searchAgain = new JButton("Delete again");
+            searchAgain.setBounds(10, 80, 165, 25);
+            searchAgain.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    deleteGui();
+                }
+            });
+
+            retMenu = new JButton("Return to Main Menu");
+            retMenu.setBounds(180, 80, 165, 25);
+            retMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    mm.mainMenu();
+                }
+            });
+
+            panel.add(tryAgain);
+            panel.add(searchAgain);
+            panel.add(retMenu);
+
+            JLabel newCode = new JLabel("Would you like to delete another service?");
+            newCode.setBounds(10, 10, 250, 25);
+
+            JButton addMore = new JButton("YES");
+            addMore.setBounds(10, 30, 165, 25);
+            addMore.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    deleteGui();
+                }
+            });
+
+            JButton dontAdd = new JButton("NO");
+            dontAdd.setBounds(180, 30, 165, 25);
+            dontAdd.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    mm.mainMenu();
+                }
+            });
+
+            frame.setVisible(true);
         }
     }
 
-//    edit a service
+    //    edit a service
     public void editService() {
         mm = new MainMenu();
-        Scanner scanner = new Scanner(System.in);
 
-        String input;
-        System.out.print("""
-                The services cannot be edited.
-                If you would like to edit an existing service, the service will be first deleted from the file, and a new service will be created.\s
-                Would you like to proceed? [Y/N]:\s""");
-        input = scanner.next().toUpperCase();
-        if(input.equals("N"))
-            mm.mainMenu();
+        frame = new JFrame();
+        panel = new JPanel();
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Add Service");
+        frame.add(panel);
+        panel.setLayout(null);
 
         int line = search();
         delete(2, line);
         addService(1);
 
         System.out.println();
-        do {
-            System.out.print("Do you want to edit another patient record? [Y/N]: ");
-            input = scanner.next().toUpperCase();
-            if(input.equals("Y"))
-                editService();
-            else if(input.equals("N"))
+
+        JLabel editAgain = new JLabel("Do you want to edit another patient record?");
+        editAgain.setBounds(10,90,500,25);
+        panel.add(editAgain);
+
+        JButton yes = new JButton("YES");
+        yes.setBounds(10, 110, 165, 25);
+        yes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                editGui();
+            }
+        });
+
+        JButton no = new JButton("NO");
+        no.setBounds(180, 110, 165, 25);
+        no.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
                 mm.mainMenu();
-            else
-                System.out.println("Invalid input! Please enter a valid input.");
-        } while(!input.equals("Y") && !input.equals("N"));
+            }
+        });
+
+        panel.add(yes);
+        panel.add(no);
+
+        frame.setVisible(true);
     }
 
-/*
-* searches services.txt for methods:
-*   searchService(), deleteService(), and editService()
-* returns the line number needed
-* */
+    public void addGui() {
+        mm = new MainMenu();
+        rf = new ReadFile();
+        wtf = new WriteToFile();
+        services = new ArrayList<>();
+
+        frame = new JFrame();
+        panel = new JPanel();
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Add Service");
+        frame.add(panel);
+        panel.setLayout(null);
+
+        JLabel codeLabel = new JLabel("Enter unique 3-code Service Code:");
+        codeLabel.setBounds(10, 10, 500, 25);
+        panel.add(codeLabel);
+
+        getCode = new JTextField(20);
+        getCode.setBounds(10, 30, 165, 25);
+        panel.add(getCode);
+        panel.add(getCode);
+
+        JLabel descLabel = new JLabel("Enter laboratory service Description:");
+        descLabel.setBounds(10, 70, 500, 25);
+        panel.add(descLabel);
+
+        getDesc = new JTextField(20);
+        getDesc.setBounds(10, 90, 165, 25);
+        panel.add(getDesc);
+
+        JLabel priceLabel = new JLabel("Enter laboratory service Price:");
+        priceLabel.setBounds(10, 130, 500, 25);
+        panel.add(priceLabel);
+
+        getPrice = new JTextField(20);
+        getPrice.setBounds(10, 150, 165, 25);
+        panel.add(getPrice);
+
+        JLabel save = new JLabel("Would you like to save this service?");
+        JButton yes = new JButton("YES");
+        JButton no = new JButton("NO");
+        yes.setBounds(10, 225, 165, 25);
+        no.setBounds(180, 225, 165, 25);
+        save.setBounds(10, 200, 500, 25);
+
+        yes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                code = getCode.getText().toUpperCase();
+                desc = getDesc.getText();
+                price = Integer.parseInt(getPrice.getText());
+                addService(0);
+            }
+        });
+        no.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+
+        panel.add(save);
+        panel.add(yes);
+        panel.add(no);
+
+        frame.setVisible(true);
+    }
+
+
+    public void searchGui() {
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Services");
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel searchCode1 = new JLabel("");
+
+        searchCode1.setText("Do you know the service code?");
+        searchCode1.setBounds(10, 10, 250, 25);
+
+        JButton sYes = new JButton("YES");
+        sYes.setBounds(10, 40, 165, 25);
+        sYes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 1;
+                searchInput();
+            }
+        });
+
+        JButton sNo = new JButton("NO");
+        sNo.setBounds(180, 40, 165, 25);
+        sNo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 2;
+                searchInput();
+            }
+        });
+
+        panel.add(searchCode1);
+        panel.add(sYes);
+        panel.add(sNo);
+        frame.dispose();
+        frame.setVisible(true);
+    }
+    
+    public void searchInput(){
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Services");
+        frame.add(panel);
+
+        panel.setLayout(null);
+        
+        switch(scan){
+            case 1 -> {
+                JLabel searchLabel = new JLabel("Enter service code");
+                searchLabel.setBounds(10, 10, 500, 25);
+                panel.add(searchLabel);
+
+                inputCode = new JTextField(20);
+                inputCode.setBounds(10, 30, 165, 25);
+                panel.add(inputCode);
+
+                JButton searchCode = new JButton("Search");
+                searchCode.setBounds(180, 30, 165, 25);
+                panel.add(searchCode);
+                searchCode.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        searchService();
+                    }
+                });
+            }
+            case 2 -> {
+                JLabel descLabel = new JLabel("Input a keyword of the service's description");
+                descLabel.setBounds(10, 10, 500, 25);
+                panel.add(descLabel);
+
+                inputKey = new JTextField(20);
+                inputKey.setBounds(10, 30, 165, 25);
+                panel.add(inputKey);
+
+                JButton searchKey = new JButton("Search");
+                searchKey.setBounds(180, 30, 165, 25);
+                panel.add(searchKey);
+                searchKey.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        searchService();
+                    }
+                });
+            }
+        }
+        frame.setVisible(true);
+    }
+
+    /*
+     * searches services.txt for methods:
+     *   searchService(), deleteService(), and editService()
+     * returns the line number needed
+     * */
     public int search() {
         rf = new ReadFile();
         Scanner scanner = new Scanner(System.in);
-
-        int scan;
+        
         int line = 0;
-        String input;
+        String input = null;
 
-        System.out.print("Do you know the service code?[Y/N]: ");
-        input = scanner.next().toUpperCase();
-        if(input.equals("Y"))
-            scan = 1;
-        else {
-            System.out.print("Input a keyword of the service's description: ");
-            input = scanner.next();
-            scan = 2;
-        }
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Services");
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel code = new JLabel("Service Code");
+        JLabel desc = new JLabel("Description");
+        JLabel price = new JLabel("Price");
+        code.setBounds(10, 10, 500, 25);
+        desc.setBounds(150, 10, 500, 25);
+        price.setBounds(290, 10, 500, 25);
+
+        JLabel finalCode = new JLabel("");
+        finalCode.setBounds(10, 30, 500, 25);
+        JLabel finalDesc = new JLabel("");
+        finalDesc.setBounds(150, 30, 500, 25);
+        JLabel finalPrice = new JLabel("");
+        finalPrice.setBounds(290, 30, 500, 25);
 
         // get all lines in services.txt and save to String[][] services
         String fileName = "services.txt";
@@ -312,10 +649,10 @@ public class ManageServices {
         int searched = 0;
         int[] lines = new int[256];
         String searchCode;
+
         switch (scan) {
             case 1 -> {
-                System.out.print("Enter service code: ");
-                searchCode = scanner.next().toUpperCase();
+                searchCode = inputCode.getText();
                 for (int i = 0; i < count; i++) {
                     if (Objects.equals(services[i][0], searchCode) && !Objects.equals(services[i][3], "D")) {
                         searched = 1;
@@ -326,6 +663,7 @@ public class ManageServices {
                 }
             }
             case 2 -> {
+                input = inputKey.getText();
                 for (int i = 0; i < count; i++) {                       // for every service
                     String[] temp = services[i][1].split(" ");          // get words in description
                     // for every word in description
@@ -348,25 +686,31 @@ public class ManageServices {
 
         // if there is only 1 match search, return line number to line
         // else: ask user to input the patient's UID to display
-        String[] temp;
         if(searched==0)
             return -2;
         else if(searched>1) {
-            System.out.printf("%-15s", "Service Code");
-            System.out.printf("%-25s", "Description");
-            System.out.printf("%-20s", "Price");
-            System.out.println();
             services = sortArray(services);
+
+            panel.add(code);
+            panel.add(desc);
+            panel.add(price);
             try {
+                int y = 30;
                 for(int i=0; i<lines.length; i++) {
-                    temp = services[i][1].split(" ");
+                    String[] temp = services[i][1].split(" ");
                     for (String s : temp) {
                         if (!Objects.equals(services[i][3], "D"))
                             if (s.equalsIgnoreCase(input)) {
-                                System.out.printf("%-15s", services[i][0]);
-                                System.out.printf("%-25s", services[i][1]);
-                                System.out.printf("%-20s", services[i][2]);
-                                System.out.println();
+
+                                finalCode.setText(services[i][0]);
+                                finalDesc.setText(services[i][1]);
+                                finalPrice.setText(services[i][2]);
+
+                                finalCode.setBounds(10, y, 500, 25);
+                                finalDesc.setBounds(150, y, 500, 25);
+                                finalPrice.setBounds(290, y, 500, 25);
+
+                                y += 20;
                             }
                     }
                 }
@@ -383,35 +727,180 @@ public class ManageServices {
                 }
             if(searched!=1)
                 return -2;
-        } else
+        }else{
             line = lines[0];
 
-        System.out.printf("%-15s", "Service Code");
-        System.out.printf("%-25s", "Description");
-        System.out.printf("%-20s", "Price");
-        System.out.println();
-        System.out.printf("%-15s", services[line][0]);
-        System.out.printf("%-25s", services[line][1]);
-        System.out.printf("%-20s", services[line][2]);
-        System.out.println();
+            finalCode.setText(services[line][0]);
+            finalDesc.setText(services[line][1]);
+            finalPrice.setText(services[line][2]);
 
+            panel.add(code);
+            panel.add(desc);
+            panel.add(price);
+            panel.add(finalCode);
+            panel.add(finalDesc);
+            panel.add(finalPrice);
+
+            frame.setVisible(true);
+        }
         return line;
     }
 
-/*
-* deletes a service for methods:
-*   deleteService() and editService()
-* accepts parameters:
-*   int type for deleteService() and editService()
-*   int line for which line will be deleted
-* */
-    public void delete(int type, int line) {
-        Scanner scanner = new Scanner(System.in);
+    public void deleteGui(){
+        frame = new JFrame();
+        panel = new JPanel();
 
-        System.out.print("Please state reason for deletion: ");
-        String reason = scanner.nextLine();
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel searchCode1 = new JLabel("");
+
+        searchCode1.setText("Do you know the service code?");
+        searchCode1.setBounds(10, 10, 250, 25);
+
+        JButton sYes = new JButton("YES");
+        sYes.setBounds(10, 40, 165, 25);
+        sYes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 1;
+                deleteInput();
+            }
+        });
+
+        JButton sNo = new JButton("NO");
+        sNo.setBounds(180, 40, 165, 25);
+        sNo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 2;
+                deleteInput();
+            }
+        });
+
+        panel.add(searchCode1);
+        panel.add(sYes);
+        panel.add(sNo);
+        frame.dispose();
+        frame.setVisible(true);
+    }
+
+    public void deleteInput(){
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        switch(scan){
+            case 1 -> {
+                JLabel searchLabel = new JLabel("Enter service code");
+                searchLabel.setBounds(10, 10, 500, 25);
+                panel.add(searchLabel);
+
+                inputCode = new JTextField(20);
+                inputCode.setBounds(10, 30, 165, 25);
+                panel.add(inputCode);
+
+                JButton searchCode = new JButton("continue");
+                searchCode.setBounds(180, 30, 165, 25);
+                panel.add(searchCode);
+                searchCode.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        deleteReason();
+                    }
+                });
+            }
+            case 2 -> {
+                JLabel descLabel = new JLabel("Input a keyword of the service's description");
+                descLabel.setBounds(10, 10, 500, 25);
+                panel.add(descLabel);
+
+                inputKey = new JTextField(20);
+                inputKey.setBounds(10, 30, 165, 25);
+                panel.add(inputKey);
+
+                JButton searchKey = new JButton("continue");
+                searchKey.setBounds(180, 30, 165, 25);
+                panel.add(searchKey);
+                searchKey.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        deleteReason();
+                    }
+                });
+            }
+        }
+        frame.setVisible(true);
+    }
+
+    public void deleteReason(){
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        JLabel delLabel = new JLabel("Please state reason for deletion");
+        delLabel.setBounds(10, 10, 500, 25);
+        panel.add(delLabel);
+
+        panel.setLayout(null);
+
+        delReason = new JTextField(20);
+        delReason.setBounds(10, 30, 165, 25);
+        panel.add(delReason);
+
+        JButton delCode = new JButton("Delete");
+        delCode.setBounds(180, 30, 100, 25);
+        panel.add(delCode);
+        delCode.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                deleteService();
+            }
+
+        });
+
+        frame.setVisible(true);
+    }
+
+    /*
+     * deletes a service for methods:
+     *   deleteService() and editService()
+     * accepts parameters:
+     *   int type for deleteService() and editService()
+     *   int line for which line will be deleted
+     * */
+    public void delete(int type, int line) {
+        String reason = delReason.getText();
         String D = "D;";
         String newLine = String.join("", D, reason);
+
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Services");
+        frame.add(panel);
+
+        panel.setLayout(null);
 
         String fileName = "services.txt";
         try {
@@ -436,8 +925,9 @@ public class ManageServices {
             String code = splitLine[0];
             String description = splitLine[1];
 
-            System.out.println(code + " " +  description + " has been deleted.");
-            System.out.println();
+            JLabel deleted = new JLabel(code + " " + description + " has been deleted");
+            deleted.setBounds(10,10,500,25);
+            panel.add(deleted);
         } catch(IOException e) {
             System.out.println("Error occurred. Please try again");
             if (type==1)
@@ -445,21 +935,241 @@ public class ManageServices {
             else
                 editService();
         }
+        frame.setVisible(true);
     }
 
-// sort array by code
+    public void editGui(){
+        mm = new MainMenu();
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+        panel.setLayout(null);
+
+        JLabel eDesc1 = new JLabel("The services cannot be edited.");
+        JLabel eDesc2 = new JLabel("If you would like to edit an existing service, the service will be first deleted from the file, and a new service will be created");
+        JLabel eDesc3 = new JLabel("Do you know the service code?");
+
+        eDesc1.setBounds(10, 10, 200, 25);
+        eDesc2.setBounds(10,30,1000,25);
+        eDesc3.setBounds(10,50,200,25);
+
+        JButton edit = new JButton("YES");
+        edit.setBounds(10, 80,165,25);
+        edit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 1;
+                editInput();
+            }
+        });
+
+        JButton edit2 = new JButton("NO");
+        edit2.setBounds(180, 80,165,25);
+        edit2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                scan = 2;
+                editInput();
+            }
+        });
+
+        JButton mainMenu = new JButton("Main Menu");
+        mainMenu.setBounds(350, 80,165,25);
+        mainMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+
+        panel.add(eDesc1);
+        panel.add(eDesc2);
+        panel.add(eDesc3);
+        panel.add(edit);
+        panel.add(edit2);
+        panel.add(mainMenu);
+
+
+        frame.setVisible(true);
+    }
+
+    public void editInput(){
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        switch(scan){
+            case 1 -> {
+                JLabel searchLabel = new JLabel("Enter service code");
+                searchLabel.setBounds(10, 10, 500, 25);
+                panel.add(searchLabel);
+
+                inputCode = new JTextField(20);
+                inputCode.setBounds(10, 30, 165, 25);
+                panel.add(inputCode);
+
+                JButton searchCode = new JButton("continue");
+                searchCode.setBounds(180, 30, 165, 25);
+                panel.add(searchCode);
+                searchCode.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        editReason();
+                    }
+                });
+            }
+            case 2 -> {
+                JLabel descLabel = new JLabel("Input a keyword of the service's description");
+                descLabel.setBounds(10, 10, 500, 25);
+                panel.add(descLabel);
+
+                inputKey = new JTextField(20);
+                inputKey.setBounds(10, 30, 165, 25);
+                panel.add(inputKey);
+
+                JButton searchKey = new JButton("continue");
+                searchKey.setBounds(180, 30, 165, 25);
+                panel.add(searchKey);
+                searchKey.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        frame.dispose();
+                        editReason();
+                    }
+                });
+            }
+        }
+        frame.setVisible(true);
+    }
+
+    public void editReason(){
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Delete Service");
+        frame.add(panel);
+
+        JLabel delLabel = new JLabel("Please state reason for deletion");
+        delLabel.setBounds(10, 10, 500, 25);
+        panel.add(delLabel);
+
+        panel.setLayout(null);
+
+        delReason = new JTextField(20);
+        delReason.setBounds(10, 30, 165, 25);
+        panel.add(delReason);
+
+        JButton delCode = new JButton("Delete");
+        delCode.setBounds(180, 30, 100, 25);
+        panel.add(delCode);
+        delCode.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                editAdd();
+            }
+
+        });
+
+        frame.setVisible(true);
+    }
+
+    public void editAdd(){
+        mm = new MainMenu();
+        rf = new ReadFile();
+        wtf = new WriteToFile();
+        services = new ArrayList<>();
+
+        frame = new JFrame();
+        panel = new JPanel();
+        frame.add(panel, BorderLayout.LINE_START);
+        frame.setSize(960, 540);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Add Service");
+        frame.add(panel);
+        panel.setLayout(null);
+
+        JLabel codeLabel = new JLabel("Enter unique 3-code Service Code:");
+        codeLabel.setBounds(10, 10, 500, 25);
+        panel.add(codeLabel);
+
+        getCode = new JTextField(20);
+        getCode.setBounds(10, 30, 165, 25);
+        panel.add(getCode);
+        panel.add(getCode);
+
+        JLabel descLabel = new JLabel("Enter laboratory service Description:");
+        descLabel.setBounds(10, 70, 500, 25);
+        panel.add(descLabel);
+
+        getDesc = new JTextField(20);
+        getDesc.setBounds(10, 90, 165, 25);
+        panel.add(getDesc);
+
+        JLabel priceLabel = new JLabel("Enter laboratory service Price:");
+        priceLabel.setBounds(10, 130, 500, 25);
+        panel.add(priceLabel);
+
+        getPrice = new JTextField(20);
+        getPrice.setBounds(10, 150, 165, 25);
+        panel.add(getPrice);
+
+        JLabel save = new JLabel("Would you like to save this service?");
+        JButton yes = new JButton("YES");
+        JButton no = new JButton("NO");
+        yes.setBounds(10, 225, 165, 25);
+        no.setBounds(180, 225, 165, 25);
+        save.setBounds(10, 200, 500, 25);
+
+        yes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                code = getCode.getText().toUpperCase();
+                desc = getDesc.getText();
+                price = Integer.parseInt(getPrice.getText());
+                editService();
+            }
+        });
+        no.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                mm.mainMenu();
+            }
+        });
+
+        panel.add(save);
+        panel.add(yes);
+        panel.add(no);
+
+        frame.setVisible(true);
+    }
+
+    // sort array by code
     public static String[][] sortArray(String[][] data) {
         int nonNull = 0;
-        for(int i = 0; i < data[0].length; i++) {
-            if(data[0][i] != null) {
+        for (int i = 0; i < data[0].length; i++) {
+            if (data[0][i] != null) {
                 nonNull++;
             }
         }
 
         int counter = 0;
         String[][] newData = new String[nonNull][];
-        for(int i = 0; i < data[0].length; i++) {
-            if(data[0][i] != null) {
+        for (int i = 0; i < data[0].length; i++) {
+            if (data[0][i] != null) {
                 newData[counter] = data[i];
                 counter++;
             }
@@ -476,3 +1186,4 @@ public class ManageServices {
         return newData;
     }
 }
+
