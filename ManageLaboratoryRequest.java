@@ -22,9 +22,9 @@ import java.util.*;
 public class ManageLaboratoryRequest implements ActionListener {
     private ArrayList<Request> requests;
 
-    private WriteToFile wtf;
-    private MainMenu mm;
-    private ReadFile rf;
+    private WriteToFile writeToFile;
+    private MainMenu mainMenu;
+    private ReadFile readFile;
 
     private JFrame frame;
     private JPanel panel;
@@ -58,11 +58,11 @@ public class ManageLaboratoryRequest implements ActionListener {
     private String[][] serviceRecords;
 
     private final String FILE_NAME = "_Requests.txt";
-
     private String[] data = new String[4];
 
+    /* main menu */
     public void manageLaboratoryRequest() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
         frame = new JFrame();
         panel = new JPanel();
 
@@ -119,12 +119,12 @@ public class ManageLaboratoryRequest implements ActionListener {
         else if (e.getSource() == editButton)
             editLaboratoryRequest();
         else if (e.getSource() == returnButton)
-            mm.mainMenu();
+            mainMenu.mainMenu();
     }
 
-//    generates Request UID
+    /* generates Request UID */
     public String generateUID(String code) {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
         String[] tempUID = new String[8];
 
@@ -164,8 +164,8 @@ public class ManageLaboratoryRequest implements ActionListener {
 
         //GET REQUESTS FROM <CODE>_REQUESTS.TXT
         String fileName = code + FILE_NAME;
-        int isFirst = rf.readUID(fileName);
-        String prevUID = rf.getUID();
+        int isFirst = readFile.readUID(fileName);
+        String prevUID = readFile.getUID();
 
         String A;
         String B;
@@ -211,11 +211,11 @@ public class ManageLaboratoryRequest implements ActionListener {
         return String.join("", code, str, newUID);
     }
 
-//    adds a new laboratory request
+    /* adds a new laboratory request */
     public void addNewLaboratoryRequest() {
-        rf = new ReadFile();
-        mm = new MainMenu();
-        wtf = new WriteToFile();
+        readFile = new ReadFile();
+        mainMenu = new MainMenu();
+        writeToFile = new WriteToFile();
         requests = new ArrayList<>();
 
         frame = new JFrame();
@@ -250,11 +250,11 @@ public class ManageLaboratoryRequest implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 String UID = UIDText.getText().toUpperCase();
                 String pFile = "Patients.txt";
-                int pExists = rf.checkUID(pFile, UID);
+                int pExists = readFile.checkUID(pFile, UID);
 
                 String code = codeText.getText().toUpperCase();
                 String cFile = "services.txt";
-                int cExists = rf.checkCode(cFile, code);
+                int cExists = readFile.checkCode(cFile, code);
 
                 if (pExists != 1) {
                     frame.dispose();
@@ -296,7 +296,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             frame.dispose();
-                            mm.mainMenu();
+                            mainMenu.mainMenu();
                         }
                     });
                     panel.add(returnButton);
@@ -343,7 +343,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             frame.dispose();
-                            mm.mainMenu();
+                            mainMenu.mainMenu();
                         }
                     });
                     panel.add(returnButton);
@@ -388,7 +388,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                 requests.add(request);
 
                 String fileName = code + FILE_NAME;
-                int error = wtf.writeToLabRequests(fileName, request);
+                int error = writeToFile.writeToLabRequests(fileName, request);
                 frame.dispose();
                 frame = new JFrame();
                 panel = new JPanel();
@@ -436,7 +436,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             frame.dispose();
-                            mm.mainMenu();
+                            mainMenu.mainMenu();
                         }
                     });
                     panel.add(returnButton);
@@ -452,15 +452,23 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+    * searchLaboratoryRequest
+    * main search method
+    * */
     public void searchLaboratoryRequest() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         methodType = 0;
         searchGUI();
     }
 
+    /*
+     * searchLaboratoryRequest
+     * displays laboratory request
+     * */
     public void displayLaboratoryRequest() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -519,15 +527,22 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
-//    deletes a laboratory request
+    /*
+     * deleteLaboratoryRequest
+     * main delete method
+     * */
     public void deleteLaboratoryRequest() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         methodType = 1;
 
         searchGUI();
     }
 
+    /*
+     * deleteLaboratoryRequest
+     * accepts input for reason to delete
+     * */
     public void deleteInput() {
         frame = new JFrame();
         panel = new JPanel();
@@ -562,6 +577,10 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+     * deleteLaboratoryRequest
+     * deletes patient record from text file
+     * */
     public void delete() {
         String D = "D;";
         String newLine = String.join("", D, deleteReason);
@@ -594,21 +613,28 @@ public class ManageLaboratoryRequest implements ActionListener {
         }
     }
 
-//    edits the results of a laboratory request
+    /*
+     * editLaboratoryRequest
+     * main delete method
+     * */
     public void editLaboratoryRequest() {
-        rf = new ReadFile();
-        mm = new MainMenu();
+        readFile = new ReadFile();
+        mainMenu = new MainMenu();
 
         methodType = 2;
 
         searchGUI();
     }
 
+    /*
+    * editLaboratoryRequest
+    * checks if the laboratory request already has a result
+    * */
     public void editVerify() {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
-        rf.readRequests(finalFileName);
-        labRecords = rf.getTempReq();
+        readFile.readRequests(finalFileName);
+        labRecords = readFile.getTempReq();
 
         if (!labRecords[line][4].equals("XXX")) {
             exists = 1;
@@ -618,6 +644,10 @@ public class ManageLaboratoryRequest implements ActionListener {
             editInput();
     }
 
+    /*
+     * editLaboratoryRequest
+     * accepts result input
+     * */
     public void editInput() {
         frame = new JFrame();
         panel = new JPanel();
@@ -652,6 +682,10 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
+    /*
+     * editLaboratoryRequest
+     * edits patient record from text file
+     * */
     public void edit() {
         try {
             File file = new File(finalFileName);
@@ -684,6 +718,9 @@ public class ManageLaboratoryRequest implements ActionListener {
         }
     }
 
+    /*
+     * asks user if they know the request's UID
+     * */
     public void searchGUI() {
         frame = new JFrame();
         panel = new JPanel();
@@ -706,7 +743,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 scan = 1;
-                searchInput();
+                searchInput(0);
             }
         });
         panel.add(yesButton);
@@ -718,7 +755,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 scan = 2;
-                searchInput();
+                searchInput(0);
             }
         });
         panel.add(noButton);
@@ -726,7 +763,15 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
-    public void searchInput() {
+    /*
+     * accepts user input for UID
+     * also called by managePatientRecords to print
+     * */
+    public String[] searchInput(int print) {
+        readFile = new ReadFile();
+        if (print == 1)
+            scan = 1;
+
         frame = new JFrame();
         panel = new JPanel();
 
@@ -752,9 +797,57 @@ public class ManageLaboratoryRequest implements ActionListener {
                 searchButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        requestUID = UIDText.getText();
+                        requestUID = UIDText.getText().toUpperCase();
                         frame.dispose();
-                        searchRecord();
+                        if (print != 1)
+                            searchRecord();
+                        else {
+                            String code = requestUID.substring(0, 3);
+                            String fileName = code + FILE_NAME;
+
+                            // get all lines in laboratory requests file and save to String[][] labRecords
+                            readFile.readRequests(fileName);
+                            labRecords = readFile.getTempReq();
+
+                            // count total non-null entries in String[][] requests
+                            for (String[] request : labRecords)
+                                for (int j = 0; j < labRecords[0].length; j++)
+                                    if (request[0] != null && request[0].length()==15) {
+                                        countRequests++;
+                                        break;
+                                    }
+
+                            // get all lines in services file and save to String[][] serviceRecords
+                            fileName = "services.txt";
+                            readFile.readServices(fileName);
+                            serviceRecords = readFile.getTempServ();
+
+                            // count total non-null entries in String[][] services
+                            for (String[] service : serviceRecords)
+                                for (int j = 0; j < serviceRecords[0].length; j++)
+                                    if (service[0] != null && service[0].length() == 3) {
+                                        countServices++;
+                                        break;
+                                    }
+
+                            // check for code match
+                            for (int i = 0; i < countServices; i++)
+                                if (code.equals(serviceRecords[i][0])) {
+                                    display[1] = serviceRecords[i][1];
+                                    break;
+                                }
+
+                            // check for UID match
+                            for(int i=0; i<countRequests; i++)
+                                if (Objects.equals(requestUID, labRecords[i][0])) {
+                                    display[0] = labRecords[i][0];
+                                    display[2] = labRecords[i][2];
+                                    display[3] = labRecords[i][4];
+                                    searched = 1;
+                                    line = i;
+                                    break;
+                                }
+                        }
                     }
                 });
                 panel.add(searchButton);
@@ -773,7 +866,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                 searchButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        patientUID = UIDText.getText();
+                        patientUID = UIDText.getText().toUpperCase();
                         frame.dispose();
                         searchRecord();
                     }
@@ -782,10 +875,14 @@ public class ManageLaboratoryRequest implements ActionListener {
             }
         }
         frame.setVisible(true);
+        return display;
     }
 
+    /*
+     * searches for laboratory request
+     * */
     public void searchRecord() {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
         switch (scan) {
             case 1 -> {
@@ -794,10 +891,10 @@ public class ManageLaboratoryRequest implements ActionListener {
                 finalFileName = fileName;
                 finalRequestUID = requestUID;
                 // get all lines in laboratory requests file and save to String[][] labRecords
-                int error = rf.readRequests(fileName);
+                int error = readFile.readRequests(fileName);
                 if (error == 1)
                     error();
-                labRecords = rf.getTempReq();
+                labRecords = readFile.getTempReq();
 
                 // count total non-null entries in String[][] requests
                 for (String[] request : labRecords)
@@ -809,10 +906,10 @@ public class ManageLaboratoryRequest implements ActionListener {
 
                 // get all lines in services file and save to String[][] serviceRecords
                 fileName = "services.txt";
-                error = rf.readServices(fileName);
+                error = readFile.readServices(fileName);
                 if(error==1)
                     error();
-                serviceRecords = rf.getTempServ();
+                serviceRecords = readFile.getTempServ();
                 // count total non-null entries in String[][] services
                 for (String[] service : serviceRecords)
                     for (int j = 0; j < serviceRecords[0].length; j++)
@@ -840,11 +937,11 @@ public class ManageLaboratoryRequest implements ActionListener {
             }
             case 2 -> {
                 String fileName = "services.txt";
-                int error = rf.readServices(fileName);
+                int error = readFile.readServices(fileName);
                 if(error==1)
                     error();
-                serviceRecords = rf.getTempServ();
-                serviceRecords = sortArray(serviceRecords);
+                serviceRecords = readFile.getTempServ();
+//                serviceRecords = sortArray(serviceRecords);
 
                 // count total non-null entries in String[][] services
                 for (String[] service : serviceRecords)
@@ -857,11 +954,11 @@ public class ManageLaboratoryRequest implements ActionListener {
                 for (int i = 0; i < countServices; i++) {
                     String code = serviceRecords[i][0];
                     fileName = serviceRecords[i][0] + FILE_NAME;
-                    error = rf.readRequests(fileName);
+                    error = readFile.readRequests(fileName);
                     if (error==-1)
                         error();
-                    String[][] requestsTemp = rf.getTempReq();
-                    requestsTemp = sortDate(requestsTemp);
+                    String[][] requestsTemp = readFile.getTempReq();
+//                    requestsTemp = sortDate(requestsTemp);
 
                     // count total non-null entries in String[][] temp
                     int countTemp = 0;
@@ -891,8 +988,12 @@ public class ManageLaboratoryRequest implements ActionListener {
         }
     }
 
+    /*
+     * checks if there were requests found
+     * displays records there are multiple records found
+     * */
     public void search() {
-        rf = new ReadFile();
+        readFile = new ReadFile();
 
         if (searched==0) {
             noRecordFound = 1;
@@ -961,8 +1062,8 @@ public class ManageLaboratoryRequest implements ActionListener {
                     String code = finalRequestUID.substring(0, 3);
                     finalFileName = code + FILE_NAME;
 
-                    rf.readRequests(finalFileName);
-                    String[][] temp = rf.getTempReq();
+                    readFile.readRequests(finalFileName);
+                    String[][] temp = readFile.getTempReq();
                     // count total non-null entries in String[][] requests
                     for (String[] request : temp)
                         for (int j = 0; j < temp[0].length; j++)
@@ -972,8 +1073,8 @@ public class ManageLaboratoryRequest implements ActionListener {
                             }
 
                     String filename = "services.txt";
-                    rf.readServices(filename);
-                    String[][] tempService = rf.getTempServ();
+                    readFile.readServices(filename);
+                    String[][] tempService = readFile.getTempServ();
                     // count total non-null entries in String[][] services
                     int countService = 0;
                     for (String[] service : tempService)
@@ -1009,11 +1110,12 @@ public class ManageLaboratoryRequest implements ActionListener {
                 deleteInput();
             else if (methodType == 2)
                 editVerify();
-            else if (methodType == 3)
-                laboratoryData();
         }
     }
 
+    /*
+     * calls respective methods after search()
+     * */
     public void searchVerify() {
         if (searched!=1) {
             noRecordFound = 1;
@@ -1025,14 +1127,12 @@ public class ManageLaboratoryRequest implements ActionListener {
                 deleteInput();
             else if (methodType == 2)
                 editVerify();
-            else if (methodType == 3)
-                laboratoryData();
         }
     }
 
-    //    task successful
+    /* message dialogue for successful transaction */
     public void confirmation() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -1087,7 +1187,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
         panel.add(returnButton);
@@ -1095,9 +1195,9 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
-    //    error
+    /* message dialogue for unsuccessful transaction */
     public void error() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -1158,7 +1258,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
         panel.add(returnButton);
@@ -1166,7 +1266,7 @@ public class ManageLaboratoryRequest implements ActionListener {
         frame.setVisible(true);
     }
 
-// sort array by UID
+    /* sorts array by UID */
     public static String[][] sortArray(String[][] data) {
         int nonNull = 0;
         for(int i = 0; i < data[0].length; i++) {
@@ -1194,7 +1294,7 @@ public class ManageLaboratoryRequest implements ActionListener {
         return newData;
     }
 
-// sort array by date
+    /* sorts array by date */
     public static String[][] sortDate(String[][] data) {
         int nonNull = 0;
         for(int i = 0; i < data[0].length; i++) {
@@ -1221,44 +1321,5 @@ public class ManageLaboratoryRequest implements ActionListener {
         });
 
         return newData;
-    }
-
-/*
-* for print results in managePatientRecords
-* */
-    public void getLaboratoryData() {
-        scan = 1;
-        methodType = 3;
-        searchInput();
-    }
-
-    public void laboratoryData() {
-        rf = new ReadFile();
-
-        String code = finalFileName.substring(0, 3);
-        rf.readRequests(finalFileName);
-        String[][] requests = rf.getTempReq();
-
-        int sLine = 0;
-        // get all lines in services.txt and save to String[][] services
-        String fileName = "services.txt";
-        rf.readServices(fileName);
-        String[][] services = rf.getTempServ();
-
-        for (int i = 0; i< services.length; i++)
-            if(code.equals(services[i][0])) {
-                sLine = i;
-                break;
-            }
-
-        data[0] = requests[line][0];
-        data[1] = requests[line][2];
-        data[2] = requests[line][4];
-        data[3] = requests[sLine][1];
-    }
-
-    public String[] getData() {
-        laboratoryData();
-        return data.clone();
     }
 }

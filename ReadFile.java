@@ -4,6 +4,7 @@
 * */
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ReadFile {
@@ -61,11 +62,11 @@ public class ReadFile {
                 String[] tempLine = temp.split(";");
                 for (int i = counter; i < counter + 1; i++) {
                     if (tempLine.length <= 3) {
-                        for (int j = 0; j < 3; j++)
+                        for (int j = 0; j < tempLine.length; j++)
                             if (tempLine[j] != null)
                                 tempServ[i][j] = tempLine[j];
                     } else if (tempLine.length == 5) {
-                        for (int j = 0; j < 5; j++)
+                        for (int j = 0; j < tempLine.length; j++)
                             if (tempLine[j] != null) {
                                 tempServ[i][j] = tempLine[j];
                             }
@@ -73,7 +74,6 @@ public class ReadFile {
                 }
                 counter++;
             }
-
             error = 0;
         } catch (IOException e) {
             error = 1;

@@ -7,6 +7,7 @@
  *   and editing a service.
  * */
 
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,9 +23,9 @@ public class ManageServices {
     private ArrayList<Service> services;
     String fileName = "services.txt";
 
-    private MainMenu mm;
-    private ReadFile rf;
-    private WriteToFile wtf;
+    private MainMenu mainMenu;
+    private ReadFile readFile;
+    private WriteToFile writeFile;
     private String code;
     private String desc;
     private int price;
@@ -41,7 +42,7 @@ public class ManageServices {
     private JTextField delReason;
 
     public void manageServices() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
         frame = new JFrame();
         panel = new JPanel();
 
@@ -97,7 +98,7 @@ public class ManageServices {
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
 
@@ -119,7 +120,7 @@ public class ManageServices {
     public void addService(int type) {
         //check if service code already exists
         int exists;
-        exists = rf.checkCode(fileName, code);
+        exists = readFile.checkCode(fileName, code);
 
         if (exists == 1) {
             JLabel codeExists = new JLabel("Service code already exists! Please try again!");
@@ -131,7 +132,7 @@ public class ManageServices {
             Service service = new Service(code, desc, price);
             services.add(service);
 
-            int error = wtf.writeToServices(fileName, service);
+            int error = writeFile.writeToServices(fileName, service);
             if (error == 1)
                 addService(0);
             else
@@ -170,7 +171,7 @@ public class ManageServices {
             dontAdd.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.dispose();
-                    mm.mainMenu();
+                    mainMenu.mainMenu();
                 }
             });
 
@@ -185,7 +186,7 @@ public class ManageServices {
 
     //    searches for a service
     public void searchService() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -197,10 +198,10 @@ public class ManageServices {
         frame.add(panel);
 
         JLabel notFound = new JLabel(" ");
-        notFound.setBounds(10, 10, 500, 25);
+        notFound.setBounds(10, 60, 500, 25);
 
         JLabel tryAgain = new JLabel(" ");
-        tryAgain.setBounds(10, 30, 500, 25);
+        tryAgain.setBounds(10, 80, 500, 25);
 
 
         line = search();
@@ -213,33 +214,6 @@ public class ManageServices {
         else if(line==-2) {
             notFound.setText("No record found.");
             tryAgain.setText("Would you like to try again or return to the main menu?");
-
-            searchAgain = new JButton("Search again");
-            searchAgain.setBounds(10, 55, 165, 25);
-            searchAgain.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    searchGui();
-                }
-            });
-
-            retMenu = new JButton("Return to Main Menu");
-            retMenu.setBounds(180, 55, 165, 25);
-            retMenu.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                    mm.mainMenu();
-                }
-            });
-            panel.add(notFound);
-            panel.add(tryAgain);
-            panel.add(searchAgain);
-            panel.add(retMenu);
-
-            frame.setVisible(true);
-        } else {
-            tryAgain.setText("Would you like to search for another service?");
-            tryAgain.setBounds(10,80,500,25);
 
             searchAgain = new JButton("Search again");
             searchAgain.setBounds(10, 110, 165, 25);
@@ -255,7 +229,34 @@ public class ManageServices {
             retMenu.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.dispose();
-                    mm.mainMenu();
+                    mainMenu.mainMenu();
+                }
+            });
+            panel.add(notFound);
+            panel.add(tryAgain);
+            panel.add(searchAgain);
+            panel.add(retMenu);
+
+            frame.setVisible(true);
+        } else {
+            tryAgain.setText("Would you like to search for another service?");
+            tryAgain.setBounds(10,90,500,25);
+
+            searchAgain = new JButton("Search again");
+            searchAgain.setBounds(10, 110, 165, 25);
+            searchAgain.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    searchGui();
+                }
+            });
+
+            retMenu = new JButton("Return to Main Menu");
+            retMenu.setBounds(180, 110, 165, 25);
+            retMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                    mainMenu.mainMenu();
                 }
             });
 
@@ -270,7 +271,7 @@ public class ManageServices {
 
     //    deletes a service
     public void deleteService() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -313,7 +314,7 @@ public class ManageServices {
             retMenu.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.dispose();
-                    mm.mainMenu();
+                    mainMenu.mainMenu();
                 }
             });
 
@@ -341,7 +342,7 @@ public class ManageServices {
             retMenu.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.dispose();
-                    mm.mainMenu();
+                    mainMenu.mainMenu();
                 }
             });
 
@@ -366,7 +367,7 @@ public class ManageServices {
             dontAdd.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.dispose();
-                    mm.mainMenu();
+                    mainMenu.mainMenu();
                 }
             });
 
@@ -376,7 +377,7 @@ public class ManageServices {
 
     //    edit a service
     public void editService() {
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
 
         frame = new JFrame();
         panel = new JPanel();
@@ -386,6 +387,8 @@ public class ManageServices {
         frame.setTitle("Add Service");
         frame.add(panel);
         panel.setLayout(null);
+
+        String input;
 
         int line = search();
         delete(2, line);
@@ -411,7 +414,7 @@ public class ManageServices {
         no.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
 
@@ -422,9 +425,9 @@ public class ManageServices {
     }
 
     public void addGui() {
-        mm = new MainMenu();
-        rf = new ReadFile();
-        wtf = new WriteToFile();
+        mainMenu = new MainMenu();
+        readFile = new ReadFile();
+        writeFile = new WriteToFile();
         services = new ArrayList<>();
 
         frame = new JFrame();
@@ -480,7 +483,7 @@ public class ManageServices {
         no.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
 
@@ -597,9 +600,8 @@ public class ManageServices {
      * returns the line number needed
      * */
     public int search() {
-        rf = new ReadFile();
-        Scanner scanner = new Scanner(System.in);
-        
+        readFile = new ReadFile();
+
         int line = 0;
         String input = null;
 
@@ -630,11 +632,10 @@ public class ManageServices {
 
         // get all lines in services.txt and save to String[][] services
         String fileName = "services.txt";
-        int error = rf.readServices(fileName);
+        int error = readFile.readServices(fileName);
         if(error==1)
             return -1;
-        String[][] services = rf.getTempServ();
-
+        String[][] services = readFile.getTempServ();
         // count total non-null entries in String[][] services
         int count = 0;
         for (String[] service : services)
@@ -643,7 +644,6 @@ public class ManageServices {
                     count++;
                     break;
                 }
-
         // switch case
         // get input from user to search match/es in String services[][]
         int searched = 0;
@@ -653,7 +653,7 @@ public class ManageServices {
         switch (scan) {
             case 1 -> {
                 searchCode = inputCode.getText();
-                for (int i = 0; i < count; i++) {
+                for (int i = 0; i <= count; i++) {
                     if (Objects.equals(services[i][0], searchCode) && !Objects.equals(services[i][3], "D")) {
                         searched = 1;
                         lines[0] = i;
@@ -664,18 +664,21 @@ public class ManageServices {
             }
             case 2 -> {
                 input = inputKey.getText();
-                for (int i = 0; i < count; i++) {                       // for every service
-                    String[] temp = services[i][1].split(" ");          // get words in description
-                    // for every word in description
-                    for (String s : temp)
-                        try {
-                            if (!Objects.equals(services[i][3], "D"))
-                                if (s.equalsIgnoreCase(input)) {
-                                    lines[searched] = i;
-                                    searched++;
-                                }
-                        } catch (NullPointerException ignored) { }
+                for (int i = 0; i <= count; i++) {                       // for every service
+                    if(services[i][1] != null){
+                        String[] temp = services[i][1].split(" ");          // get words in description
+                        // for every word in description
+                        for (String s : temp)
+                            try {
+                                if (!Objects.equals(services[i][3], "D"))
+                                    if (s.equalsIgnoreCase(input)) {
+                                        lines[searched] = i;
+                                        searched++;
+                                    }
+                            } catch (NullPointerException ignored) { }
+                    }
                 }
+
             }
             default -> {
                 System.out.println("An error occurred. Please try again.");
@@ -686,47 +689,43 @@ public class ManageServices {
 
         // if there is only 1 match search, return line number to line
         // else: ask user to input the patient's UID to display
+        String[] temp;
         if(searched==0)
             return -2;
         else if(searched>1) {
-            services = sortArray(services);
-
             panel.add(code);
             panel.add(desc);
             panel.add(price);
             try {
                 int y = 30;
-                for(int i=0; i<lines.length; i++) {
-                    String[] temp = services[i][1].split(" ");
-                    for (String s : temp) {
+                for(int i=0; i < services.length; i++) {
+                    temp = services[i][1].split(" ");
+                    for (int j = 0; j < temp.length; j++) {
                         if (!Objects.equals(services[i][3], "D"))
-                            if (s.equalsIgnoreCase(input)) {
-
-                                finalCode.setText(services[i][0]);
-                                finalDesc.setText(services[i][1]);
-                                finalPrice.setText(services[i][2]);
+                            if (temp[j].equalsIgnoreCase(input)) {
+                                finalCode = new JLabel(services[i][0]);
+                                finalDesc = new JLabel(services[i][1]);
+                                finalPrice = new JLabel(services[i][2]);
 
                                 finalCode.setBounds(10, y, 500, 25);
                                 finalDesc.setBounds(150, y, 500, 25);
                                 finalPrice.setBounds(290, y, 500, 25);
 
                                 y += 20;
+                                panel.add(code);
+                                panel.add(desc);
+                                panel.add(price);
+                                panel.add(finalCode);
+                                panel.add(finalDesc);
+                                panel.add(finalPrice);
+                                frame.setVisible(true);
                             }
                     }
                 }
+
             } catch (NullPointerException ignored) {}
-            System.out.println();
-            System.out.print("Enter the service code: ");
-            input = scanner.next().toUpperCase();
-            System.out.println();
-            for(int i=0; i< services.length; i++)
-                if(Objects.equals(services[i][0], input)) {
-                    line = i;
-                    searched = 1;
-                    break;
-                }
-            if(searched!=1)
-                return -2;
+            scan = 1;
+            searchInput();
         }else{
             line = lines[0];
 
@@ -939,7 +938,7 @@ public class ManageServices {
     }
 
     public void editGui(){
-        mm = new MainMenu();
+        mainMenu = new MainMenu();
         frame = new JFrame();
         panel = new JPanel();
 
@@ -978,12 +977,12 @@ public class ManageServices {
             }
         });
 
-        JButton mainMenu = new JButton("Main Menu");
-        mainMenu.setBounds(350, 80,165,25);
-        mainMenu.addActionListener(new ActionListener() {
+        JButton menu = new JButton("Main Menu");
+        menu.setBounds(350, 80,165,25);
+        menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
 
@@ -992,7 +991,7 @@ public class ManageServices {
         panel.add(eDesc3);
         panel.add(edit);
         panel.add(edit2);
-        panel.add(mainMenu);
+        panel.add(menu);
 
 
         frame.setVisible(true);
@@ -1088,9 +1087,9 @@ public class ManageServices {
     }
 
     public void editAdd(){
-        mm = new MainMenu();
-        rf = new ReadFile();
-        wtf = new WriteToFile();
+        mainMenu = new MainMenu();
+        readFile = new ReadFile();
+        writeFile = new WriteToFile();
         services = new ArrayList<>();
 
         frame = new JFrame();
@@ -1146,7 +1145,7 @@ public class ManageServices {
         no.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mm.mainMenu();
+                mainMenu.mainMenu();
             }
         });
 
@@ -1178,7 +1177,6 @@ public class ManageServices {
         Arrays.sort(newData, (entry1, entry2) -> {
             final String time1 = entry1[0];
             final String time2 = entry2[0];
-
 
             return time1.compareTo(time2);
 

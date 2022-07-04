@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 public class MainMenu implements ActionListener {
     private JFrame frame;
     private JPanel panel;
-    private JLabel selectLabel;
     private JButton patientsButton;
     private JButton servicesButton;
     private JButton labButton;
@@ -24,7 +23,7 @@ public class MainMenu implements ActionListener {
         panel.setLayout(boxLayout);
         panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
 
-        selectLabel = new JLabel("Select a transaction: ");
+        JLabel selectLabel = new JLabel("Select a transaction: ");
         selectLabel.setBounds(10, 10, 250, 25);
         panel.add(selectLabel);
 

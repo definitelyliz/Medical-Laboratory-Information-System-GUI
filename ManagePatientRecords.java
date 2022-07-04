@@ -38,6 +38,8 @@ public class ManagePatientRecords implements ActionListener {
 
     private JFrame frame;
     private JPanel panel;
+    private JFrame displayFrame;
+    private JPanel displayPanel;
     private JButton addButton;
     private JButton editButton;
     private JButton deleteButton;
@@ -66,6 +68,7 @@ public class ManagePatientRecords implements ActionListener {
     private String[][] services;
     private String[][] patientRecords;
 
+    /* main menu */
     public void managePatientRecords() {
         mainMenu = new MainMenu();
         frame = new JFrame();
@@ -522,7 +525,7 @@ public class ManagePatientRecords implements ActionListener {
         if (error==1)
             error();
         services = readFile.getTempServ();
-        services = sortArray(services);
+//        services = sortArray(services);
 
         // count all services
         for (String[] service : services)
@@ -542,83 +545,84 @@ public class ManagePatientRecords implements ActionListener {
     public void displayPatient() {
         mainMenu = new MainMenu();
 
-        frame = new JFrame();
-        panel = new JPanel();
+        displayFrame = new JFrame();
+        displayPanel = new JPanel();
 
-        frame.setSize(960, 540);
-        frame.setTitle("Search Patient Records");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(panel);
+        displayFrame.setSize(960, 540);
+        displayFrame.setTitle("Search Patient Records");
+        displayFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        displayFrame.setLocationRelativeTo(null);
+        displayFrame.add(displayPanel);
 
-        panel.setLayout(new BorderLayout());
+        displayPanel.setLayout(null);
 
         String patientUID = patientRecords[line][0];
 
         JLabel UIDLabel = new JLabel("Patient's UID: ");
         UIDLabel.setBounds(10, 10, 95, 20);
-        panel.add(UIDLabel);
+        displayPanel.add(UIDLabel);
 
         JLabel UIDInfo = new JLabel(patientRecords[line][0]);
         UIDInfo.setBounds(105, 10, 250, 20);
-        panel.add(UIDInfo);
+        displayPanel.add(UIDInfo);
 
         JLabel nameLabel = new JLabel("Name: ");
         nameLabel.setBounds(10, 30, 95, 20);
-        panel.add(nameLabel);
+        displayPanel.add(nameLabel);
 
         JLabel nameInfo = new JLabel(patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3]);
         nameInfo.setBounds(105, 30, 250, 20);
-        panel.add(nameInfo);
+        displayPanel.add(nameInfo);
 
         JLabel birthdayLabel = new JLabel("Birthday: ");
         birthdayLabel.setBounds(10, 50, 95, 20);
-        panel.add(birthdayLabel);
+        displayPanel.add(birthdayLabel);
 
         JLabel birthdayInfo = new JLabel(patientRecords[line][4]);
         birthdayInfo.setBounds(105, 50, 250, 20);
-        panel.add(birthdayInfo);
+        displayPanel.add(birthdayInfo);
 
         JLabel addressLabel = new JLabel("Address: ");
         addressLabel.setBounds(10, 70, 95, 20);
-        panel.add(addressLabel);
+        displayPanel.add(addressLabel);
 
         JLabel addressInfo = new JLabel(patientRecords[line][6]);
         addressInfo.setBounds(105, 70, 250, 20);
-        panel.add(addressInfo);
+        displayPanel.add(addressInfo);
 
         JLabel phoneNoLabel = new JLabel("Phone Number: ");
         phoneNoLabel.setBounds(10, 90, 95, 20);
-        panel.add(phoneNoLabel);
+        displayPanel.add(phoneNoLabel);
 
         JLabel phoneNoInfo = new JLabel(patientRecords[line][7]);
         phoneNoInfo.setBounds(105, 90, 250, 20);
-        panel.add(phoneNoInfo);
+        displayPanel.add(phoneNoInfo);
 
         JLabel nationalIDNoLabel = new JLabel("National ID no.: ");
         nationalIDNoLabel.setBounds(10, 110, 95, 20);
-        panel.add(nationalIDNoLabel);
+        displayPanel.add(nationalIDNoLabel);
 
         JLabel nationalIDNoInfo = new JLabel(patientRecords[line][8]);
         nationalIDNoInfo.setBounds(105, 110, 250, 20);
-        panel.add(nationalIDNoInfo);
+        displayPanel.add(nationalIDNoInfo);
 
         String code;
 
         JLabel requestUIDLabel = new JLabel("Request's UID");
         requestUIDLabel.setBounds(10, 150, 100, 20);
-        panel.add(requestUIDLabel);
+        displayPanel.add(requestUIDLabel);
 
         JLabel labTestTypeLabel = new JLabel("Lab Test Type");
         labTestTypeLabel.setBounds(200, 150, 100, 20);
-        panel.add(labTestTypeLabel);
+        displayPanel.add(labTestTypeLabel);
 
         JLabel requestDateLabel = new JLabel("Request Date");
         requestDateLabel.setBounds(390, 150, 100, 20);
-        panel.add(requestDateLabel);
+        displayPanel.add(requestDateLabel);
 
         JLabel requestLabel = new JLabel("Result");
         requestLabel.setBounds(580, 150, 100, 20);
-        panel.add(requestLabel);
+        displayPanel.add(requestLabel);
 
         int y = 150;
         for(int i=0; i<countServices; i++) {
@@ -630,7 +634,7 @@ public class ManagePatientRecords implements ActionListener {
             if (error == 1)
                 error();
             String[][] requests = readFile.getTempReq();
-            requests = sortDate(requests);
+//            requests = sortDate(requests);
 
             int length = 0;
             for (String[] request : requests)
@@ -644,33 +648,32 @@ public class ManagePatientRecords implements ActionListener {
             boolean exists = file.exists();
 
             for (int j = length - 1; j >= 0; j--) {
-                int x = 10;
                 if (patientUID.equals(requests[j][1]) && exists) {
                     y+=20;
                     JLabel requestUID = new JLabel(requests[j][0]);
-                    requestUID.setBounds(x, y, 170, 20);
-                    panel.add(requestUID);
-                    x+=190;
+                    requestUID.setBounds(10, y, 170, 20);
+                    displayPanel.add(requestUID);
+
                     JLabel labTestType = new JLabel(description);
-                    labTestType.setBounds(x, y, 170, 20);
-                    panel.add(labTestType);
-                    x+=190;
+                    labTestType.setBounds(200, y, 170, 20);
+                    displayPanel.add(labTestType);
+
                     JLabel requestDate = new JLabel(requests[j][2]);
-                    requestDate.setBounds(x, y, 170, 20);
-                    panel.add(requestDate);
-                    x+=190;
+                    requestDate.setBounds(390, y, 170, 20);
+                    displayPanel.add(requestDate);
+
                     JLabel results = new JLabel(requests[j][4]);
-                    results.setBounds(x, y, 170, 20);
-                    panel.add(results);
+                    results.setBounds(580, y, 170, 20);
+                    displayPanel.add(results);
                 }
             }
             Arrays.stream(requests).forEach(x -> Arrays.fill(x, null));
         }
         JLabel buffer = new JLabel("");
         buffer.setBounds(10, y+30, 100, 20);
-        panel.add(buffer);
+        displayPanel.add(buffer);
 
-        frame.setVisible(true);
+        displayFrame.setVisible(true);
 
         printResultsDialogue();
     }
@@ -686,7 +689,6 @@ public class ManagePatientRecords implements ActionListener {
         popUpFrame.setSize(960, 540);
         popUpFrame.setTitle("Print Laboratory Request");
         popUpFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        popUpFrame.setLocationRelativeTo(null);
 
         BoxLayout boxLayout = new BoxLayout(popUpPanel, BoxLayout.Y_AXIS);
         popUpPanel.setLayout(boxLayout);
@@ -715,6 +717,7 @@ public class ManagePatientRecords implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
+                displayFrame.dispose();
                 popUpFrame.dispose();
                 mainMenu.mainMenu();
             }
@@ -732,8 +735,8 @@ public class ManagePatientRecords implements ActionListener {
     public void printResults() {
         manageLaboratoryRequest = new ManageLaboratoryRequest();
 
-        manageLaboratoryRequest.getLaboratoryData();
-        String[] ret = manageLaboratoryRequest.getData();
+        String[] ret = manageLaboratoryRequest.searchInput(1);
+//        displayFrame.dispose();
 
         String name = patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3];
         String sUID = ret[0];
@@ -1159,7 +1162,7 @@ public class ManagePatientRecords implements ActionListener {
                 searchButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        patientUID = UIDText.getText();
+                        patientUID = UIDText.getText().toUpperCase();
                         frame.dispose();
                         searchRecord();
                     }
@@ -1243,26 +1246,32 @@ public class ManagePatientRecords implements ActionListener {
         switch (scan) {
             case 1 -> {
                 for (int i = 0; i < countPatients; i++)
-                    if(Objects.equals(patientRecords[i][0], patientUID) && !Objects.equals(patientRecords[i][9], "D")) {
-                        searched = 1;
-                        lines[0] = i;
-                        search();
+                    if (!Objects.equals(patientRecords[i][0], null)) {
+                        if(patientRecords[i][0].equalsIgnoreCase(patientUID) && !patientRecords[i][9].equalsIgnoreCase("D")) {
+                            searched = 1;
+                            lines[0] = i;
+                            search();
+                        }
                     }
             }
             case 2 -> {
                 for (int i = 0; i < countPatients; i++)
-                    if (Objects.equals(patientRecords[i][8], nationalIDNo) && !Objects.equals(patientRecords[i][9], "D")) {
-                        searched = 1;
-                        lines[0] = i;
-                        search();
+                    if (!Objects.equals(patientRecords[i][0], null)) {
+                        if (patientRecords[i][8].equalsIgnoreCase(nationalIDNo) && !patientRecords[i][9].equalsIgnoreCase("D")) {
+                            searched = 1;
+                            lines[0] = i;
+                            search();
+                        }
                     }
             }
             case 3 -> {
                 for (int i = 0; i < countPatients; i++) {
                     try {
-                        if (!Objects.equals(patientRecords[i][9], "D") && patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
-                            lines[searched] = i;
-                            searched++;
+                        if (!Objects.equals(patientRecords[i][0], null)) {
+                            if (!patientRecords[i][9].equals("D") && patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
+                                lines[searched] = i;
+                                searched++;
+                            }
                         }
                     } catch (NullPointerException ignored) {}
                 }
@@ -1287,75 +1296,99 @@ public class ManagePatientRecords implements ActionListener {
             frame = new JFrame();
             panel = new JPanel();
 
-            frame.setSize(960, 540);
+            frame.setSize(1080, 540);
             frame.setTitle("Searching Patient Records...");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.add(panel);
 
-            BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-            panel.setLayout(boxLayout);
-            panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+            panel.setLayout(null);
 
             JLabel UIDLabel = new JLabel("Patient's UID");
             UIDLabel.setBounds(10, 10, 100, 20);
             panel.add(UIDLabel);
 
             JLabel lastNameLabel = new JLabel("Last Name");
-            lastNameLabel.setBounds(100, 10, 100, 20);
+            lastNameLabel.setBounds(120, 10, 100, 20);
             panel.add(lastNameLabel);
 
             JLabel firsNameLabel = new JLabel("First Name");
-            firsNameLabel.setBounds(190, 10, 100, 20);
+            firsNameLabel.setBounds(210, 10, 100, 20);
             panel.add(firsNameLabel);
 
             JLabel middleNameLabel = new JLabel("Middle Name");
-            middleNameLabel.setBounds(280, 10, 100, 20);
+            middleNameLabel.setBounds(300, 10, 100, 20);
             panel.add(middleNameLabel);
 
             JLabel birthdayLabel = new JLabel("Birthday");
-            birthdayLabel.setBounds(370, 10, 100, 20);
+            birthdayLabel.setBounds(390, 10, 100, 20);
             panel.add(birthdayLabel);
 
             JLabel genderLabel = new JLabel("Gender");
-            genderLabel.setBounds(460, 10, 100, 20);
+            genderLabel.setBounds(480, 10, 100, 20);
             panel.add(genderLabel);
 
             JLabel addressLabel = new JLabel("Address");
-            addressLabel.setBounds(550, 10, 100, 20);
+            addressLabel.setBounds(570, 10, 100, 20);
             panel.add(addressLabel);
 
             JLabel phoneNumberLabel = new JLabel("Phone Number");
-            phoneNumberLabel.setBounds(640, 10, 100, 20);
+            phoneNumberLabel.setBounds(740, 10, 100, 20);
             panel.add(phoneNumberLabel);
 
             JLabel nationalIDLabel = new JLabel("National ID. No");
-            nationalIDLabel.setBounds(730, 10, 100, 20);
+            nationalIDLabel.setBounds(850, 10, 100, 20);
             panel.add(nationalIDLabel);
 
-            int x = 10;
             int y = 10;
-            String temp;
             for (int i = 0; i<lines.length; i++) {
-                y += 30;
-                for (int j = 0; j < 9; j++)
-                    if (patientRecords[i][0] != null)
-                        if (patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
-                            temp = patientRecords[i][j];
+                if (patientRecords[i][0] != null)
+                    if (patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
+                        y += 20;
 
-                            JLabel print = new JLabel(temp);
-                            print.setBounds(x, y, 100, 20);
-                            panel.add(print);
+                        JLabel UID = new JLabel(patientRecords[i][0]);
+                        UID.setBounds(10, y, 100, 20);
+                        panel.add(UID);
 
-                            x += 90;
-                        }
+                        JLabel lastName = new JLabel(patientRecords[i][1]);
+                        lastName.setBounds(120, y, 100, 20);
+                        panel.add(lastName);
+
+                        JLabel firstName = new JLabel(patientRecords[i][2]);
+                        firstName.setBounds(210, y, 100, 20);
+                        panel.add(firstName);
+
+                        JLabel middleName = new JLabel(patientRecords[i][3]);
+                        middleName.setBounds(300, y, 100, 20);
+                        panel.add(middleName);
+
+                        JLabel birthday = new JLabel(patientRecords[i][4]);
+                        birthday.setBounds(390, y, 100, 20);
+                        panel.add(birthday);
+
+                        JLabel gender = new JLabel(patientRecords[i][5]);
+                        gender.setBounds(480, y, 100, 20);
+                        panel.add(gender);
+
+                        JLabel address = new JLabel(patientRecords[i][6]);
+                        address.setBounds(570, y, 100, 20);
+                        panel.add(address);
+
+                        JLabel phoneNumber = new JLabel(patientRecords[i][7]);
+                        phoneNumber.setBounds(740, y, 100, 20);
+                        panel.add(phoneNumber);
+
+                        JLabel nationalID = new JLabel(patientRecords[i][8]);
+                        nationalID.setBounds(850, y, 100, 20);
+                        panel.add(nationalID);
+                    }
             }
             y += 30;
-            JLabel enterUID = new JLabel("Enter the patient's UID: ");
-            enterUID.setBounds(10, y, 100, 20);
+            JLabel enterUID = new JLabel("Enter patient's UID: ");
+            enterUID.setBounds(10, y, 120, 20);
             panel.add(enterUID);
 
             JTextField UIDText = new JTextField();
-            UIDText.setBounds(x + 100, y, 100, 25);
+            UIDText.setBounds(140, y, 250, 25);
             panel.add(UIDText);
 
             JButton enterButton = new JButton("ENTER");
@@ -1365,30 +1398,39 @@ public class ManagePatientRecords implements ActionListener {
                 public void actionPerformed(ActionEvent e) {
                     finalUID = UIDText.getText();
                     for(int i=0; i< patientRecords.length; i++)
-                        if (Objects.equals(patientRecords[i][0], finalUID)) {
-                            line = i;
-                            searched = 1;
-                            break;
+                        if (!Objects.equals(patientRecords[i][0], null)) {
+                            if (patientRecords[i][0].equalsIgnoreCase(finalUID)) {
+                                line = i;
+                                searched = 1;
+                                break;
+                            }
                         }
                     frame.dispose();
+                    searchVerify();
                 }
             });
             panel.add(enterButton);
             frame.setVisible(true);
 
-            if (searched!=1) {
-                noRecordFound = 1;
-                error();
-            } else {
-                if (methodType == 0)
-                    displayPatient();
-                else if (methodType == 1)
-                    deleteInput();
-                else if (methodType == 2)
-                    editOption();
-            }
         } else {
             line = lines[0];
+            if (methodType == 0)
+                displayPatient();
+            else if (methodType == 1)
+                deleteInput();
+            else if (methodType == 2)
+                editOption();
+        }
+    }
+
+    /*
+    * calls respective methods after search()
+    * */
+    public void searchVerify() {
+        if (searched!=1) {
+            noRecordFound = 1;
+            error();
+        } else {
             if (methodType == 0)
                 displayPatient();
             else if (methodType == 1)
