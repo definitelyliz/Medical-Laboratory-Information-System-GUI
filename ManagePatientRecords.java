@@ -1251,7 +1251,7 @@ public class ManagePatientRecords implements ActionListener {
             case 1 -> {
                 for (int i = 0; i < countPatients; i++)
                     if (!Objects.equals(patientRecords[i][0], null)) {
-                        if(patientRecords[i][0].equalsIgnoreCase(patientUID) && !patientRecords[i][9].equalsIgnoreCase("D")) {
+                        if(patientRecords[i][0].equalsIgnoreCase(patientUID) && !Objects.equals(patientRecords[i][9], "D")) {
                             searched = 1;
                             lines[0] = i;
                             search();
@@ -1261,7 +1261,7 @@ public class ManagePatientRecords implements ActionListener {
             case 2 -> {
                 for (int i = 0; i < countPatients; i++)
                     if (!Objects.equals(patientRecords[i][0], null)) {
-                        if (patientRecords[i][8].equalsIgnoreCase(nationalIDNo) && !patientRecords[i][9].equalsIgnoreCase("D")) {
+                        if (patientRecords[i][8].equalsIgnoreCase(nationalIDNo) && !Objects.equals(patientRecords[i][9], "D")) {
                             searched = 1;
                             lines[0] = i;
                             search();
@@ -1272,7 +1272,7 @@ public class ManagePatientRecords implements ActionListener {
                 for (int i = 0; i < countPatients; i++) {
                     try {
                         if (!Objects.equals(patientRecords[i][0], null)) {
-                            if (!patientRecords[i][9].equals("D") && patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
+                            if (!Objects.equals(patientRecords[i][9], "D") && patientRecords[i][1].equalsIgnoreCase(lastName) && patientRecords[i][2].equalsIgnoreCase(firstName) && patientRecords[i][4].equalsIgnoreCase(birthday)) {
                                 lines[searched] = i;
                                 searched++;
                             }
