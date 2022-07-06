@@ -54,6 +54,7 @@ public class ManagePatientRecords implements ActionListener {
     private int noRecordFound = 0;
     private String successDialogue;
 
+    private String UID;
     private String patientUID;
     private String nationalIDNo;
     private String lastName;
@@ -549,9 +550,9 @@ public class ManagePatientRecords implements ActionListener {
         displayPanel = new JPanel();
 
         displayFrame.setSize(960, 540);
-        displayFrame.setTitle("Search Patient Records");
+        displayFrame.setTitle("Patient Record");
         displayFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        displayFrame.setLocationRelativeTo(null);
+        displayFrame.setLocation(960, 0);
         displayFrame.add(displayPanel);
 
         displayPanel.setLayout(null);
@@ -587,7 +588,7 @@ public class ManagePatientRecords implements ActionListener {
         displayPanel.add(addressLabel);
 
         JLabel addressInfo = new JLabel(patientRecords[line][6]);
-        addressInfo.setBounds(105, 70, 250, 20);
+        addressInfo.setBounds(105, 70, 500, 20);
         displayPanel.add(addressInfo);
 
         JLabel phoneNoLabel = new JLabel("Phone Number: ");
@@ -706,7 +707,7 @@ public class ManagePatientRecords implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 popUpFrame.dispose();
-                printResults();
+                printInput();
             }
         });
         popUpPanel.add(yesButton);
@@ -724,8 +725,43 @@ public class ManagePatientRecords implements ActionListener {
         });
         popUpPanel.add(noButton);
 
-        popUpFrame.pack();
         popUpFrame.setVisible(true);
+    }
+
+    public void printInput() {
+        manageLaboratoryRequest = new ManageLaboratoryRequest();
+
+        frame = new JFrame();
+        panel = new JPanel();
+
+        frame.setSize(960, 540);
+        frame.setTitle("Searching Laboratory Records...");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel UIDLabel = new JLabel("Enter request's UID: ");
+        UIDLabel.setBounds(10, 10, 120, 20);
+        panel.add(UIDLabel);
+
+        JTextField UIDText = new JTextField();
+        UIDText.setBounds(140, 10, 250, 25);
+        panel.add(UIDText);
+
+        JButton searchButton = new JButton("SEARCH");
+        searchButton.setBounds(10, 40, 100, 25);
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                UID = UIDText.getText().toUpperCase();
+                frame.dispose();
+                printResults();
+            }
+        });
+        panel.add(searchButton);
+
+        frame.setVisible(true);
     }
 
     /*
@@ -735,8 +771,9 @@ public class ManagePatientRecords implements ActionListener {
     public void printResults() {
         manageLaboratoryRequest = new ManageLaboratoryRequest();
 
-        String[] ret = manageLaboratoryRequest.searchInput(1);
-//        displayFrame.dispose();
+        methodType = 3;
+        manageLaboratoryRequest.searchRecord(UID);
+        String[] ret = manageLaboratoryRequest.getDisplay();
 
         String name = patientRecords[line][1] + ", " + patientRecords[line][2] + " " + patientRecords[line][3];
         String sUID = ret[0];
@@ -744,9 +781,9 @@ public class ManagePatientRecords implements ActionListener {
         String birthday = patientRecords[line][4];
         String gender = patientRecords[line][5];
         String phoneNo = patientRecords[line][7];
-        String test = ret[3];
-        String result = ret[2];
-        String rDate = ret[1];
+        String test = ret[1];
+        String result = ret[3];
+        String rDate = ret[2];
 
         // calculating age
         int birthYear = Integer.parseInt(birthday.substring(0, 4));
@@ -1456,31 +1493,43 @@ public class ManagePatientRecords implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(panel);
 
-        BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-        panel.setLayout(boxLayout);
-        panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
+        panel.setLayout(null);
 
         JLabel dialogue = new JLabel(successDialogue);
-        dialogue.setBounds(10, 10, 150, 20);
+        dialogue.setBounds(10, 10, 800, 20);
         dialogue.setForeground(Color.BLUE);
         panel.add(dialogue);
 
         if (methodType == 0) {
             JLabel decisionDialogue = new JLabel("Do you want to search for another patient record or return to the Main Menu?");
-            decisionDialogue.setBounds(10, 40, 150, 20);
+            decisionDialogue.setBounds(10, 40, 800, 20);
             panel.add(decisionDialogue);
         } else if (methodType == 1) {
             JLabel decisionDialogue = new JLabel("Do you want to delete another patient record or return to the Main Menu?");
-            decisionDialogue.setBounds(10, 40, 150, 20);
+            decisionDialogue.setBounds(10, 40, 800, 20);
             panel.add(decisionDialogue);
         } else if (methodType == 2) {
             JLabel decisionDialogue = new JLabel("Do you want to edit another patient record or return to the Main Menu?");
-            decisionDialogue.setBounds(10, 40, 150, 20);
+            decisionDialogue.setBounds(10, 40, 800, 20);
+            panel.add(decisionDialogue);
+        } else if (methodType == 3) {
+            JLabel decisionDialogue = new JLabel("Do you want to print another laboratory test result or return to the Main menu?");
+            decisionDialogue.setBounds(10, 40, 800, 20);
             panel.add(decisionDialogue);
         }
 
-        JButton tryAgainButton = new JButton("Try Again");
-        tryAgainButton.setBounds(10, 10, 80, 25);
+        String button = null;
+        if (methodType == 0)
+            button = "Search for another patient record";
+        else if (methodType == 1)
+            button = "Delete another patient record";
+        else if (methodType == 2)
+            button = "Edit another patient record";
+        else if (methodType == 3)
+            button = "Print another laboratory test result";
+
+        JButton tryAgainButton = new JButton(button);
+        tryAgainButton.setBounds(10, 70, 230, 25);
         tryAgainButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1491,16 +1540,19 @@ public class ManagePatientRecords implements ActionListener {
                     deletePatientRecord();
                 else if (methodType == 2)
                     editPatientRecord();
+                else if (methodType == 3)
+                    printInput();
             }
         });
         panel.add(tryAgainButton);
 
         JButton returnButton = new JButton("Main Menu");
-        returnButton.setBounds(100, 10, 80, 25);
+        returnButton.setBounds(250, 70, 120, 25);
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
+                displayFrame.dispose();
                 mainMenu.mainMenu();
             }
         });

@@ -42,8 +42,8 @@ public class PrintLabResults {
         Image img = new Image(imageData);
         img.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
-        Paragraph address = new Paragraph("Address: 42 Wallaby Way");
-        Paragraph telephone = new Paragraph("Contact No.: 8700");
+        Paragraph address = new Paragraph("2311 N. Los Robles Avenue Pasadena, CA");
+        Paragraph telephone = new Paragraph("#8-7000");
         Table information = new Table(columnWidth);
         Table table = new Table(columnWidth);
         Table names = new Table(columnWidth);

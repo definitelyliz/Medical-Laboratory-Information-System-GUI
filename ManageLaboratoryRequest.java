@@ -40,9 +40,13 @@ public class ManageLaboratoryRequest implements ActionListener {
     private int searched = 0;
     private int methodType = -1;
     private int noRecordFound = 0;
+    private int serviceExists = 0;
+    private int patientExists = 0;
     private String successDialogue;
     private String messageDialogue;
 
+    private String UID;
+    private String code;
     private String editUpdate;
     private String requestUID;
     private String patientUID;
@@ -58,7 +62,6 @@ public class ManageLaboratoryRequest implements ActionListener {
     private String[][] serviceRecords;
 
     private final String FILE_NAME = "_Requests.txt";
-    private String[] data = new String[4];
 
     /* main menu */
     public void manageLaboratoryRequest() {
@@ -218,6 +221,8 @@ public class ManageLaboratoryRequest implements ActionListener {
         writeToFile = new WriteToFile();
         requests = new ArrayList<>();
 
+        methodType = 3;
+
         frame = new JFrame();
         panel = new JPanel();
 
@@ -248,208 +253,85 @@ public class ManageLaboratoryRequest implements ActionListener {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String UID = UIDText.getText().toUpperCase();
-                String pFile = "Patients.txt";
-                int pExists = readFile.checkUID(pFile, UID);
+                UID = UIDText.getText().toUpperCase();
+                code = codeText.getText().toUpperCase();
 
-                String code = codeText.getText().toUpperCase();
-                String cFile = "services.txt";
-                int cExists = readFile.checkCode(cFile, code);
-
-                if (pExists != 1) {
-                    frame.dispose();
-
-                    frame = new JFrame();
-                    panel = new JPanel();
-
-                    frame.setSize(960, 540);
-                    frame.setTitle("Add New Laboratory Request");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                    panel.setLayout(boxLayout);
-                    panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                    JLabel messageDialogue = new JLabel("Patient record does not exist.");
-                    messageDialogue.setBounds(10, 10, 250, 25);
-                    messageDialogue.setForeground(Color.RED);
-                    panel.add(messageDialogue);
-
-                    JLabel addOrReturnLabel = new JLabel("Would you like to add another laboratory request or return to the main menu?");
-                    addOrReturnLabel.setBounds(10, 10, 250, 25);
-                    panel.add(addOrReturnLabel);
-
-                    JButton addNewButton = new JButton("Add New Laboratory Request");
-                    addNewButton.setBounds(10, 30, 80, 25);
-                    addNewButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            addNewLaboratoryRequest();
-                        }
-                    });
-                    panel.add(addNewButton);
-
-                    JButton returnButton = new JButton("Return to the Main Menu");
-                    returnButton.setBounds(100, 30, 80, 25);
-                    returnButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            mainMenu.mainMenu();
-                        }
-                    });
-                    panel.add(returnButton);
-
-                    frame.add(panel);
-                    frame.setVisible(true);
-                } else if (cExists!=1) {
-                    frame.dispose();
-
-                    frame = new JFrame();
-                    panel = new JPanel();
-
-                    frame.setSize(960, 540);
-                    frame.setTitle("Add New Laboratory Request");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                    panel.setLayout(boxLayout);
-                    panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-
-                    JLabel messageDialogue = new JLabel("Service record does not exist.");
-                    messageDialogue.setBounds(10, 10, 250, 25);
-                    messageDialogue.setForeground(Color.RED);
-                    panel.add(messageDialogue);
-
-                    JLabel addOrReturnLabel = new JLabel("Would you like to add another laboratory request or return to the main menu?");
-                    addOrReturnLabel.setBounds(10, 10, 250, 25);
-                    panel.add(addOrReturnLabel);
-
-                    JButton addNewButton = new JButton("Add New Laboratory Request");
-                    addNewButton.setBounds(10, 30, 80, 25);
-                    addNewButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            addNewLaboratoryRequest();
-                        }
-                    });
-                    panel.add(addNewButton);
-
-                    JButton returnButton = new JButton("Return to the Main Menu");
-                    returnButton.setBounds(100, 30, 80, 25);
-                    returnButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            mainMenu.mainMenu();
-                        }
-                    });
-                    panel.add(returnButton);
-
-                    frame.add(panel);
-                    frame.setVisible(true);
-                }
-                String requestUID = generateUID(code);
-
-                int year = Calendar.getInstance().get(Calendar.YEAR);
-                String month;
-                int temp = Calendar.getInstance().get(Calendar.MONTH)+1;
-                if(temp<9)
-                    month = "0" + temp;
-                else
-                    month = String.valueOf(temp);
-                String date;
-                temp = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-                if(temp<9)
-                    date = "0" + temp;
-                else
-                    date = String.valueOf(temp);
-                String requestDate = String.join("", String.valueOf(year), month, date);
-
-                int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-                String str1;
-                if(hour<9)
-                    str1 = "0" + hour;
-                else
-                    str1 = String.valueOf(hour);
-                String str2;
-                int minute = Calendar.getInstance().get(Calendar.MINUTE);
-                if(minute<9)
-                    str2 = "0" + minute;
-                else
-                    str2 = String.valueOf(minute);
-                String requestTime = str1 + str2;
-
-                String result = "XXX";
-
-                Request request = new Request(requestUID, UID, requestDate, requestTime, result);
-                requests.add(request);
-
-                String fileName = code + FILE_NAME;
-                int error = writeToFile.writeToLabRequests(fileName, request);
                 frame.dispose();
-                frame = new JFrame();
-                panel = new JPanel();
 
-                frame.setSize(960, 540);
-                frame.setTitle("Error Message");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                BoxLayout boxLayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-                panel.setLayout(boxLayout);
-                panel.setBorder(new EmptyBorder(new Insets(10, 10, 100, 10)));
-                if(error==1) {
-                    JLabel errorLabel = new JLabel("An error occurred. Please try again.");
-                    errorLabel.setBounds(10, 10, 250, 20);
-                    errorLabel.setForeground(Color.RED);
-                    panel.add(errorLabel);
-
-                    frame.dispose();
-                    addNewLaboratoryRequest();
-                } else {
-                    String dialogue = "Laboratory Request " + requestUID + " has been added to file " + fileName;
-                    JLabel dialogueLabel = new JLabel(dialogue);
-                    dialogueLabel.setBounds(10, 10, 250, 20);
-                    dialogueLabel.setForeground(Color.BLUE);
-                    panel.add(dialogueLabel);
-
-                    JLabel addOrReturnLabel = new JLabel("Would you like to add another laboratory request or return to the main menu?");
-                    addOrReturnLabel.setBounds(10, 10, 250, 25);
-                    panel.add(addOrReturnLabel);
-
-                    JButton addNewButton = new JButton("Add New Laboratory Request");
-                    addNewButton.setBounds(10, 30, 80, 25);
-                    addNewButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            addNewLaboratoryRequest();
-                        }
-                    });
-                    panel.add(addNewButton);
-
-                    JButton returnButton = new JButton("Return to the Main Menu");
-                    returnButton.setBounds(100, 30, 80, 25);
-                    returnButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            frame.dispose();
-                            mainMenu.mainMenu();
-                        }
-                    });
-                    panel.add(returnButton);
-                }
-                frame.add(panel);
-                frame.setVisible(true);
-
+                addVerify();
             }
         });
         panel.add(addButton);
 
         frame.add(panel);
         frame.setVisible(true);
+    }
+
+    public void addVerify() {
+        String pFile = "Patients.txt";
+        int pExists = readFile.checkUID(pFile, UID);
+
+        String cFile = "services.txt";
+        int cExists = readFile.checkCode(cFile, code);
+
+        if (pExists != 1) {
+            messageDialogue = "Patient record does not exist.";
+            patientExists = 1;
+            error();
+        } else if (cExists!=1) {
+            messageDialogue = "Service entered is not offered.";
+            serviceExists = 1;
+            error();
+        } else {
+            add();
+        }
+    }
+
+    public void add() {
+        String requestUID = generateUID(code);
+
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        String month;
+        int temp = Calendar.getInstance().get(Calendar.MONTH)+1;
+        if(temp<9)
+            month = "0" + temp;
+        else
+            month = String.valueOf(temp);
+        String date;
+        temp = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        if(temp<9)
+            date = "0" + temp;
+        else
+            date = String.valueOf(temp);
+        String requestDate = String.join("", String.valueOf(year), month, date);
+
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        String str1;
+        if(hour<9)
+            str1 = "0" + hour;
+        else
+            str1 = String.valueOf(hour);
+        String str2;
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        if(minute<9)
+            str2 = "0" + minute;
+        else
+            str2 = String.valueOf(minute);
+        String requestTime = str1 + str2;
+
+        String result = "XXX";
+
+        Request request = new Request(requestUID, UID, requestDate, requestTime, result);
+        requests.add(request);
+
+        String fileName = code + FILE_NAME;
+        int error = writeToFile.writeToLabRequests(fileName, request);
+        if (error == 1)
+            error();
+        else {
+            successDialogue = "Laboratory Request " + requestUID + " has been added to file " + fileName;
+            confirmation();
+        }
     }
 
     /*
@@ -743,7 +625,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 scan = 1;
-                searchInput(0);
+                searchInput();
             }
         });
         panel.add(yesButton);
@@ -755,7 +637,7 @@ public class ManageLaboratoryRequest implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
                 scan = 2;
-                searchInput(0);
+                searchInput();
             }
         });
         panel.add(noButton);
@@ -767,11 +649,7 @@ public class ManageLaboratoryRequest implements ActionListener {
      * accepts user input for UID
      * also called by managePatientRecords to print
      * */
-    public String[] searchInput(int print) {
-        readFile = new ReadFile();
-        if (print == 1)
-            scan = 1;
-
+    public void searchInput() {
         frame = new JFrame();
         panel = new JPanel();
 
@@ -799,55 +677,7 @@ public class ManageLaboratoryRequest implements ActionListener {
                     public void actionPerformed(ActionEvent e) {
                         requestUID = UIDText.getText().toUpperCase();
                         frame.dispose();
-                        if (print != 1)
-                            searchRecord();
-                        else {
-                            String code = requestUID.substring(0, 3);
-                            String fileName = code + FILE_NAME;
-
-                            // get all lines in laboratory requests file and save to String[][] labRecords
-                            readFile.readRequests(fileName);
-                            labRecords = readFile.getTempReq();
-
-                            // count total non-null entries in String[][] requests
-                            for (String[] request : labRecords)
-                                for (int j = 0; j < labRecords[0].length; j++)
-                                    if (request[0] != null && request[0].length()==15) {
-                                        countRequests++;
-                                        break;
-                                    }
-
-                            // get all lines in services file and save to String[][] serviceRecords
-                            fileName = "services.txt";
-                            readFile.readServices(fileName);
-                            serviceRecords = readFile.getTempServ();
-
-                            // count total non-null entries in String[][] services
-                            for (String[] service : serviceRecords)
-                                for (int j = 0; j < serviceRecords[0].length; j++)
-                                    if (service[0] != null && service[0].length() == 3) {
-                                        countServices++;
-                                        break;
-                                    }
-
-                            // check for code match
-                            for (int i = 0; i < countServices; i++)
-                                if (code.equals(serviceRecords[i][0])) {
-                                    display[1] = serviceRecords[i][1];
-                                    break;
-                                }
-
-                            // check for UID match
-                            for(int i=0; i<countRequests; i++)
-                                if (Objects.equals(requestUID, labRecords[i][0])) {
-                                    display[0] = labRecords[i][0];
-                                    display[2] = labRecords[i][2];
-                                    display[3] = labRecords[i][4];
-                                    searched = 1;
-                                    line = i;
-                                    break;
-                                }
-                        }
+                        searchRecord(null);
                     }
                 });
                 panel.add(searchButton);
@@ -868,21 +698,25 @@ public class ManageLaboratoryRequest implements ActionListener {
                     public void actionPerformed(ActionEvent e) {
                         patientUID = UIDText.getText().toUpperCase();
                         frame.dispose();
-                        searchRecord();
+                        searchRecord(null);
                     }
                 });
                 panel.add(searchButton);
             }
         }
         frame.setVisible(true);
-        return display;
     }
 
     /*
      * searches for laboratory request
      * */
-    public void searchRecord() {
+    public void searchRecord(String UID) {
         readFile = new ReadFile();
+
+        if (UID != null) {
+            scan = 1;
+            requestUID = UID;
+        }
 
         switch (scan) {
             case 1 -> {
@@ -932,7 +766,8 @@ public class ManageLaboratoryRequest implements ActionListener {
                         display[3] = labRecords[i][4];
                         searched = 1;
                         line = i;
-                        search();
+                        if (UID == null)
+                            search();
                     }
             }
             case 2 -> {
@@ -1163,6 +998,10 @@ public class ManageLaboratoryRequest implements ActionListener {
             JLabel decisionDialogue = new JLabel("Do you want to edit another patient record or return to the Main Menu?");
             decisionDialogue.setBounds(10, 40, 150, 20);
             panel.add(decisionDialogue);
+        } else if (methodType == 3) {
+            JLabel decisionDialogue = new JLabel("Do you want to add another patient record or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
         }
 
         JButton tryAgainButton = new JButton("Try Again");
@@ -1177,6 +1016,8 @@ public class ManageLaboratoryRequest implements ActionListener {
                     deleteLaboratoryRequest();
                 else if (methodType == 2)
                     editLaboratoryRequest();
+                else if (methodType == 3)
+                    addNewLaboratoryRequest();
             }
         });
         panel.add(tryAgainButton);
@@ -1216,6 +1057,10 @@ public class ManageLaboratoryRequest implements ActionListener {
             dialogue = new JLabel(messageDialogue);
         else if (noRecordFound == 1)
             dialogue = new JLabel("No record found.");
+        else if (patientExists == 1)
+            dialogue = new JLabel(messageDialogue);
+        else if (serviceExists == 1)
+            dialogue = new JLabel(messageDialogue);
         else
             dialogue = new JLabel("An error occurred. Please check if the file exists.");
         dialogue.setBounds(10, 10, 150, 20);
@@ -1234,6 +1079,10 @@ public class ManageLaboratoryRequest implements ActionListener {
             JLabel decisionDialogue = new JLabel("Would you like to try editing another patient record again or return to the Main Menu?");
             decisionDialogue.setBounds(10, 40, 150, 20);
             panel.add(decisionDialogue);
+        } else if (methodType == 3) {
+            JLabel decisionDialogue = new JLabel("Would you like to try adding another patient record again or return to the Main Menu?");
+            decisionDialogue.setBounds(10, 40, 150, 20);
+            panel.add(decisionDialogue);
         }
 
         JButton tryAgainButton = new JButton("Try Again");
@@ -1248,6 +1097,8 @@ public class ManageLaboratoryRequest implements ActionListener {
                     deleteLaboratoryRequest();
                 else if (methodType == 2)
                     editLaboratoryRequest();
+                else if (methodType == 3)
+                    addNewLaboratoryRequest();
             }
         });
         panel.add(tryAgainButton);
@@ -1321,5 +1172,9 @@ public class ManageLaboratoryRequest implements ActionListener {
         });
 
         return newData;
+    }
+
+    public String[] getDisplay() {
+        return display.clone();
     }
 }
