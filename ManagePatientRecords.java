@@ -39,7 +39,6 @@ public class ManagePatientRecords implements ActionListener {
     private JFrame frame;
     private JPanel panel;
     private JFrame displayFrame;
-    private JPanel displayPanel;
     private JButton addButton;
     private JButton editButton;
     private JButton deleteButton;
@@ -547,7 +546,7 @@ public class ManagePatientRecords implements ActionListener {
         mainMenu = new MainMenu();
 
         displayFrame = new JFrame();
-        displayPanel = new JPanel();
+        JPanel displayPanel = new JPanel();
 
         displayFrame.setSize(960, 540);
         displayFrame.setTitle("Patient Record");
